@@ -1,5 +1,6 @@
 'use client'
 
+import { BirthdateField } from '../BirthdateField'
 import type { GuestDetails } from '../types'
 import { VENUE } from '@/content/venue'
 import { cn } from '@/lib/utils'
@@ -82,16 +83,11 @@ export function GuestStep({
           />
         </Field>
 
-        <Field label="Date of birth (optional)" error={errors.birthdate}>
-          <input
-            className="field"
-            value={guest.birthdate}
-            onChange={e => onChange({ birthdate: e.target.value })}
-            type="date"
-            autoComplete="bday"
-            max={new Date().toISOString().slice(0, 10)}
-          />
-        </Field>
+        <BirthdateField
+          value={guest.birthdate}
+          error={errors.birthdate}
+          onChange={birthdate => onChange({ birthdate })}
+        />
 
         <div className="sm:col-span-2">
           <Field label="Notes for the host (optional)">
