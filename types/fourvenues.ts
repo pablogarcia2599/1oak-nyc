@@ -132,8 +132,13 @@ export interface FvBookingCheckoutRequest {
   redirect_url: string
   error_url: string
   event_id: string
-  zone_slug: string
-  normalized_zone_name: string
+  /**
+   * `zone_slug` and `normalized_zone_name` are mutually exclusive, as are
+   * `table_id` and `normalized_table_name` — the API rejects a request
+   * carrying both halves of either pair. Undocumented; the validator says so.
+   */
+  zone_slug?: string
+  normalized_zone_name?: string
   rate_slug: string
   table_id?: string
   normalized_table_name?: string

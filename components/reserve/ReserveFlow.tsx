@@ -7,7 +7,7 @@ import { Stepper } from './Stepper'
 import { NightStep } from './steps/NightStep'
 import { TableStep } from './steps/TableStep'
 import { GuestStep } from './steps/GuestStep'
-import { ReviewStep } from './steps/ReviewStep'
+import { PricePanel } from './PricePanel'
 import { SummaryContent } from './Summary'
 import { EMPTY_GUEST, STEPS, depositFor, type GuestDetails, type Selection } from './types'
 import { partyBounds, ratesFor } from '@/lib/floorplan'
@@ -154,16 +154,9 @@ export function ReserveFlow({
   }
 
   const canAdvance =
-    step === 0
-      ? Boolean(selection.event)
-      : step === 1
-        ? Boolean(selection.zone && selection.rate)
-        : step === 2
-          ? guest.accepts_terms
-          : true
+    step === 0 ? Boolean(selection.event) : Boolean(selection.zone && selection.rate)
 
   function next() {
-    if (step === 2 && !validateGuest()) return
     goTo(Math.min(STEPS.length - 1, step + 1))
   }
 
@@ -171,6 +164,7 @@ export function ReserveFlow({
   function confirm() {
     const { event, zone, rate, table, partySize } = selection
     if (!event || !zone || !rate) return
+    if (!validateGuest()) return
     setSubmitError(undefined)
 
     startTransition(async () => {
@@ -194,10 +188,7 @@ export function ReserveFlow({
 
       if (!result.ok) {
         setSubmitError(result.error)
-        if (result.fieldErrors) {
-          setFieldErrors(result.fieldErrors)
-          goTo(2)
-        }
+        if (result.fieldErrors) setFieldErrors(result.fieldErrors)
         return
       }
 
@@ -263,24 +254,18 @@ export function ReserveFlow({
           )}
 
           {step === 2 && (
-            <GuestStep
-              guest={guest}
-              errors={fieldErrors}
-              allowsDiscountCodes={Boolean(selection.zone?.has_discount_codes_enabled)}
-              onChange={patch => {
-                setGuest(prev => ({ ...prev, ...patch }))
-                setFieldErrors({})
-              }}
-            />
-          )}
-
-          {step === 3 && (
-            <ReviewStep
-              selection={selection}
-              guest={guest}
-              currency={currency}
-              error={submitError}
-            />
+            <div className="space-y-14">
+              <GuestStep
+                guest={guest}
+                errors={fieldErrors}
+                allowsDiscountCodes={Boolean(selection.zone?.has_discount_codes_enabled)}
+                onChange={patch => {
+                  setGuest(prev => ({ ...prev, ...patch }))
+                  setFieldErrors({})
+                }}
+              />
+              <PricePanel selection={selection} currency={currency} error={submitError} />
+            </div>
           )}
 
           {/* Desktop actions sit in the column; on a phone they live in the

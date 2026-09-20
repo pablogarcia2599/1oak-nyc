@@ -44,16 +44,8 @@ export function priceBreakdown(minimumSpend: number, supplements = 0): Breakdown
         note: `${SERVICE_CHARGE_RATE * 100}%`,
         amount: money(serviceCharge),
       },
-      {
-        label: 'Administration fee',
-        note: `${ADMIN_FEE_RATE * 100}%`,
-        amount: money(adminFee),
-      },
-      {
-        label: 'Sales tax',
-        note: `${SALES_TAX_RATE * 100}% · not on service charge`,
-        amount: money(salesTax),
-      },
+      { label: 'Administration fee', note: `${ADMIN_FEE_RATE * 100}%`, amount: money(adminFee) },
+      { label: 'Sales tax', note: `${SALES_TAX_RATE * 100}%`, amount: money(salesTax) },
     ],
     total: money(base + serviceCharge + adminFee + salesTax),
   }

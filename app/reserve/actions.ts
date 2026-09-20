@@ -47,15 +47,39 @@ async function siteOrigin(): Promise<string> {
   return `${proto}://${host}`
 }
 
-/** Pulls a human-readable reason out of whatever shape the API returned. */
+/**
+ * Pulls a human-readable reason out of whatever shape the API returned.
+ *
+ * A validation failure comes back as `{ message, errors: [{ field, error }] }`,
+ * and the generic "Validation Error" on its own says nothing — the field list
+ * is the part worth showing.
+ */
 function apiMessage(body: unknown): string | undefined {
-  if (typeof body === 'string' && body.trim() && body.length < 200) return body.trim()
-  if (body && typeof body === 'object') {
-    const record = body as Record<string, unknown>
-    for (const key of ['message', 'error', 'detail']) {
-      const value = record[key]
-      if (typeof value === 'string' && value.trim() && value.length < 200) return value.trim()
-    }
+  const trim = (value: unknown) =>
+    typeof value === 'string' && value.trim() ? value.trim() : undefined
+
+  if (typeof body === 'string') return body.length < 200 ? trim(body) : undefined
+  if (!body || typeof body !== 'object') return undefined
+
+  const record = body as Record<string, unknown>
+
+  if (Array.isArray(record.errors)) {
+    const details = record.errors
+      .map(entry => {
+        if (typeof entry === 'string') return trim(entry)
+        const item = entry as Record<string, unknown>
+        const field = trim(item.field)
+        const reason = trim(item.error) ?? trim(item.message)
+        if (!reason) return undefined
+        return field ? `${field}: ${reason}` : reason
+      })
+      .filter(Boolean)
+    if (details.length > 0) return details.join(' · ').slice(0, 300)
+  }
+
+  for (const key of ['message', 'error', 'detail']) {
+    const value = trim(record[key])
+    if (value && value.length < 200) return value
   }
   return undefined
 }
@@ -79,8 +103,10 @@ export async function submitBooking(input: BookingInput): Promise<BookingResult>
       redirect_url: `${origin}/reserve/confirmed`,
       error_url: `${origin}/reserve/declined`,
       event_id: v.event_id,
+      // One zone identifier only: sending the slug and the normalized name
+      // together is "a conflict between exclusive peers" and a 400, which is
+      // what kept the payment page from ever opening.
       zone_slug: v.zone_slug,
-      normalized_zone_name: v.normalized_zone_name,
       rate_slug: v.rate_slug,
       // The API documents these as mutually exclusive — sending both is a 400,
       // which is why checkout never reached the payment page. Prefer the id.
