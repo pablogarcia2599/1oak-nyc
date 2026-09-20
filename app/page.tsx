@@ -68,39 +68,19 @@ export default async function HomePage() {
 
       <main>
         {/* ── Hero ───────────────────────────────────────────────────────── */}
-        <section className="flex min-h-svh flex-col justify-between px-4 pb-10 pt-28 sm:px-8 sm:pb-14">
-          <div className="flex flex-1 flex-col justify-center">
-            {/* The mark leads. A headline big enough to compete with it would
-                only shout over the one asset the brand actually owns. */}
-            <Reveal className="flex justify-center">
-              <Wordmark className="h-40 sm:h-52 lg:h-60" priority />
-            </Reveal>
+        <section className="flex min-h-svh flex-col items-center justify-center px-4 pb-16 pt-28 sm:px-8">
+          {/* The mark leads. A headline big enough to compete with it would
+              only shout over the one asset the brand actually owns. */}
+          <Reveal>
+            <Wordmark className="h-40 sm:h-52 lg:h-60" priority />
+          </Reveal>
 
-            <Reveal delay={160}>
-              <h1 className="wordmark-echo mt-8 text-center sm:mt-10">
-                One of a kind
-              </h1>
-            </Reveal>
-          </div>
+          <Reveal delay={160}>
+            <h1 className="wordmark-echo mt-8 text-center sm:mt-10">{VENUE.city}</h1>
+          </Reveal>
 
-          <Reveal
-            delay={280}
-            className="flex flex-col gap-6 border-t border-hairline-soft pt-8 sm:flex-row sm:items-end sm:justify-between"
-          >
-            <dl className="grid grid-cols-2 gap-x-10 gap-y-5 sm:flex sm:gap-12">
-              {[
-                ['Where', VENUE.neighborhood],
-                ['Nights', 'Thu — Sat'],
-                ['Tables', fromPrice ? `From ${formatMoney(fromPrice, currency)}` : 'On request'],
-              ].map(([term, value]) => (
-                <div key={term}>
-                  <dt className="label">{term}</dt>
-                  <dd className="mt-1.5 text-[0.95rem] text-bone">{value}</dd>
-                </div>
-              ))}
-            </dl>
-
-            <Link href="/reserve" className="btn btn-primary w-full sm:w-auto">
+          <Reveal delay={300} className="mt-14 w-full max-w-xs sm:mt-16">
+            <Link href="/reserve" className="btn btn-primary w-full">
               Reserve a table
             </Link>
           </Reveal>
