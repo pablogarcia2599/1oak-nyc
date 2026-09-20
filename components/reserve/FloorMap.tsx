@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import type { FvTable, FvZone } from '@/types/fourvenues'
 import {
   PLAN_IMAGE_STYLE,
@@ -32,10 +32,13 @@ function pillPlacement(left: number, top: number) {
  * The venue's own seating chart, cropped to the room, with live availability
  * over it.
  *
- * The whole plan fits the screen — no panning. That puts the markers below a
- * 44px touch target on a phone, so they are an overview and a confirmation,
- * not the only way in: `TableStep` pairs this with room rows and table chips
- * that are full-size targets.
+ * The whole plan fits the screen — no panning. That puts the markers at about
+ * 19px on a phone, with barely 20px between neighbours, so precision tapping
+ * is off the table: the plan itself takes the tap and selects the nearest
+ * bookable table within a thumb's reach. Missing by a few pixels still lands.
+ *
+ * The per-table buttons stay for keyboard and screen-reader users, and take
+ * pointer events back on a wide screen where a cursor can be accurate.
  */
 export function FloorMap({
   zone,
@@ -54,6 +57,37 @@ export function FloorMap({
   const plan = zone.background_image
   // Seeded with this chart's proportions so the box never resizes on load.
   const [aspect, setAspect] = useState(() => croppedAspect())
+  const planRef = useRef<HTMLDivElement>(null)
+
+  /** How far a tap may miss and still count, in CSS pixels. */
+  const TAP_RADIUS = 40
+
+  const tapPlan = useCallback(
+    (event: React.MouseEvent<HTMLDivElement>) => {
+      // A marker that handled the click itself (desktop) needs no help.
+      if (event.target instanceof Element && event.target.closest('[data-table]')) return
+
+      const box = planRef.current?.getBoundingClientRect()
+      if (!box) return
+      const x = event.clientX - box.left
+      const y = event.clientY - box.top
+
+      let best: { table: FvTable; distance: number } | undefined
+      for (const table of tables) {
+        if (!table.available || table.blocked) continue
+        const at = plan ? planPosition(table) : spreadPosition(table, tables)
+        const dx = (at.left / 100) * box.width - x
+        const dy = (at.top / 100) * box.height - y
+        const distance = Math.hypot(dx, dy)
+        if (distance <= TAP_RADIUS && (!best || distance < best.distance)) {
+          best = { table, distance }
+        }
+      }
+
+      if (best) onSelect(best.table)
+    },
+    [onSelect, plan, tables],
+  )
 
   if (tables.length === 0) {
     return (
@@ -78,7 +112,9 @@ export function FloorMap({
       }
     >
       <div
-        className="relative overflow-hidden"
+        ref={planRef}
+        onClick={tapPlan}
+        className="relative cursor-pointer overflow-hidden"
         style={plan ? { aspectRatio: String(aspect) } : undefined}
       >
         {plan ? (
@@ -119,6 +155,7 @@ export function FloorMap({
             <div key={table._id}>
               <button
                 type="button"
+                data-table
                 disabled={!bookable}
                 onClick={() => onSelect(table)}
                 aria-pressed={selected}
@@ -135,6 +172,9 @@ export function FloorMap({
                 className={cn(
                   'absolute -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-300',
                   'h-[4.5%] w-[5.6%] min-h-3.5 min-w-3.5 sm:min-h-7 sm:min-w-7',
+                  // On a phone the plan handles the tap, so the dots are
+                  // visuals; a cursor is accurate enough to keep them live.
+                  'pointer-events-none sm:pointer-events-auto',
                   selected
                     ? 'z-20 scale-125 ring-2 ring-bone'
                     : bookable
