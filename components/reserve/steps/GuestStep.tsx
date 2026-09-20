@@ -1,6 +1,7 @@
 'use client'
 
 import { BirthdateField } from '../BirthdateField'
+import { PhoneField } from '../PhoneField'
 import type { GuestDetails } from '../types'
 import { VENUE } from '@/content/venue'
 import { cn } from '@/lib/utils'
@@ -70,18 +71,11 @@ export function GuestStep({
           />
         </Field>
 
-        <Field label="Phone" error={errors.phone}>
-          <input
-            className={cn('field', errors.phone && 'border-b-red-400')}
-            value={guest.phone}
-            onChange={e => onChange({ phone: e.target.value })}
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            enterKeyHint="next"
-            placeholder="+1 555 000 0000"
-          />
-        </Field>
+        <PhoneField
+          value={guest.phone}
+          error={errors.phone}
+          onChange={phone => onChange({ phone })}
+        />
 
         <BirthdateField
           value={guest.birthdate}
