@@ -3,6 +3,7 @@
 import { headers } from 'next/headers'
 import { z } from 'zod'
 import { createBookingCheckout } from '@/lib/fourvenues/bookings'
+import { priceBreakdown } from '@/lib/pricing'
 import { FourvenuesApiError } from '@/lib/fourvenues/client'
 
 const schema = z.object({
@@ -28,6 +29,8 @@ const schema = z.object({
   observations_client: z.string().max(500).optional(),
   marketing_consent: z.boolean().default(false),
   discount_code: z.string().trim().max(40).optional(),
+  /** The rate's minimum spend, so the server can check what it was shown. */
+  minimum_spend: z.coerce.number().min(0).optional(),
 })
 
 export type BookingInput = z.input<typeof schema>
@@ -42,6 +45,19 @@ async function siteOrigin(): Promise<string> {
   const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3050'
   const proto = h.get('x-forwarded-proto') ?? (host.startsWith('localhost') ? 'http' : 'https')
   return `${proto}://${host}`
+}
+
+/** Pulls a human-readable reason out of whatever shape the API returned. */
+function apiMessage(body: unknown): string | undefined {
+  if (typeof body === 'string' && body.trim() && body.length < 200) return body.trim()
+  if (body && typeof body === 'object') {
+    const record = body as Record<string, unknown>
+    for (const key of ['message', 'error', 'detail']) {
+      const value = record[key]
+      if (typeof value === 'string' && value.trim() && value.length < 200) return value.trim()
+    }
+  }
+  return undefined
 }
 
 export async function submitBooking(input: BookingInput): Promise<BookingResult> {
@@ -66,8 +82,13 @@ export async function submitBooking(input: BookingInput): Promise<BookingResult>
       zone_slug: v.zone_slug,
       normalized_zone_name: v.normalized_zone_name,
       rate_slug: v.rate_slug,
-      ...(v.table_id && { table_id: v.table_id }),
-      ...(v.normalized_table_name && { normalized_table_name: v.normalized_table_name }),
+      // The API documents these as mutually exclusive — sending both is a 400,
+      // which is why checkout never reached the payment page. Prefer the id.
+      ...(v.table_id
+        ? { table_id: v.table_id }
+        : v.normalized_table_name
+          ? { normalized_table_name: v.normalized_table_name }
+          : {}),
       full_payment: false,
       observations_client: v.observations_client || undefined,
       marketing_consent: v.marketing_consent,
@@ -77,14 +98,34 @@ export async function submitBooking(input: BookingInput): Promise<BookingResult>
       info: {
         full_name: v.full_name,
         email: v.email,
-        phone: v.phone,
+        // The API's examples are E.164; the field is typed loosely but the
+        // spaces and punctuation a guest types are not worth the risk.
+        phone: v.phone.replace(/[^\d+]/g, ''),
         ...(v.birthdate ? { birthdate: v.birthdate } : {}),
         quantity: v.quantity,
       },
     })
 
     if (!checkout?.payment_url) {
-      return { ok: false, error: 'The reservation could not be opened for payment. Please try again.' }
+      return {
+        ok: false,
+        error: 'The reservation could not be opened for payment. Please try again.',
+      }
+    }
+
+    // The site computes the breakdown; Fourvenues computes what is charged. If
+    // the venue has not configured the service charge, fee and tax on the rate,
+    // the guest reads one figure here and pays another on the payment page.
+    // Proceed — that page is the source of truth — but make the gap loud.
+    const expected = priceBreakdown(v.minimum_spend ?? 0).total
+    if (v.minimum_spend && checkout.total_amount && Math.abs(checkout.total_amount - expected) > 1) {
+      console.error(
+        '[submitBooking] total mismatch — site showed',
+        expected,
+        'Fourvenues will charge',
+        checkout.total_amount,
+        '· configure the charges on the rate in FV Pro',
+      )
     }
 
     return {
@@ -94,10 +135,23 @@ export async function submitBooking(input: BookingInput): Promise<BookingResult>
       total_amount: checkout.total_amount,
     }
   } catch (error) {
-    console.error('[submitBooking]', error)
-    if (error instanceof FourvenuesApiError && error.status === 409) {
-      return { ok: false, error: 'That table was taken while you were booking. Pick another one.' }
+    if (error instanceof FourvenuesApiError) {
+      // The body carries the real reason; without it every failure looks the
+      // same from the outside and there is nothing to debug from.
+      console.error('[submitBooking]', error.status, JSON.stringify(error.body))
+
+      if (error.status === 409) {
+        return {
+          ok: false,
+          error: 'That table was taken while you were booking. Pick another one.',
+        }
+      }
+      const detail = apiMessage(error.body)
+      if (detail) return { ok: false, error: detail }
+    } else {
+      console.error('[submitBooking]', error)
     }
+
     return {
       ok: false,
       error: 'We could not complete the reservation. Please try again or contact the venue.',

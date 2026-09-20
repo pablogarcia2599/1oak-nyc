@@ -5,11 +5,14 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
-export function formatMoney(amount: number, currency = 'USD') {
+export function formatMoney(amount: number, currency = 'USD', { cents = false } = {}) {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency,
-    maximumFractionDigits: 0,
+    // Headline prices are round figures; a breakdown has to show the cents or
+    // its lines will not add up to its total on screen.
+    minimumFractionDigits: cents ? 2 : 0,
+    maximumFractionDigits: cents ? 2 : 0,
   }).format(amount)
 }
 

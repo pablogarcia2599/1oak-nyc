@@ -2,6 +2,7 @@
 
 import type { GuestDetails, Selection } from '../types'
 import { depositFor } from '../types'
+import { priceBreakdown } from '@/lib/pricing'
 import { doorTime, formatMoney, nightDate } from '@/lib/utils'
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -29,10 +30,10 @@ export function ReviewStep({
 
   const date = nightDate(event)
   const deposit = depositFor(rate)
+  const inFull = deposit >= rate.price
   const extraGuests = Math.max(0, partySize - rate.included_persons)
   const supplements = extraGuests * (rate.supplement_price ?? 0)
-  const payNow = deposit || rate.price
-  const inFull = deposit >= rate.price
+  const price = priceBreakdown(rate.price, supplements)
 
   return (
     <div>
@@ -49,28 +50,58 @@ export function ReviewStep({
         {guest.observations_client && <Row label="Notes" value={guest.observations_client} />}
       </dl>
 
-      <div className="material mt-10 p-6 sm:p-8">
-        <div className="flex items-baseline justify-between gap-6">
-          <span className="label">Minimum spend</span>
-          <span className="figure text-2xl text-bone">{formatMoney(rate.price, currency)}</span>
+      <div className="material-lg mt-10 overflow-hidden">
+        <div className="flex items-baseline justify-between gap-6 p-6 sm:p-8">
+          <span className="label">Total</span>
+          <span className="figure text-3xl text-gold-lit">
+            {formatMoney(price.total, currency, { cents: true })}
+          </span>
         </div>
-        {supplements > 0 && (
-          <div className="mt-4 flex items-baseline justify-between gap-6">
-            <span className="label">
-              {extraGuests} additional {extraGuests === 1 ? 'guest' : 'guests'}
+
+        <details className="group border-t border-hairline-soft">
+          <summary className="label flex cursor-pointer list-none items-center justify-between p-6 sm:px-8">
+            View breakdown
+            <span className="text-gold transition-transform duration-300 group-open:rotate-45">
+              +
             </span>
-            <span className="text-sm text-bone">{formatMoney(supplements, currency)}</span>
-          </div>
-        )}
-        <div className="my-6 h-px bg-hairline" />
-        <div className="flex items-baseline justify-between gap-6">
-          <span className="label label-gold">{inFull ? 'Payable now in full' : 'Due now'}</span>
-          <span className="figure text-3xl text-gold-lit">{formatMoney(payNow, currency)}</span>
-        </div>
-        <p className="mt-6 text-xs leading-relaxed text-faint">
+          </summary>
+
+          <dl className="px-6 pb-6 sm:px-8 sm:pb-8">
+            {price.lines.map(line => (
+              <div
+                key={line.label}
+                className="flex items-baseline justify-between gap-6 border-t border-hairline-soft py-3.5 first:border-t-0 first:pt-0"
+              >
+                <dt className="min-w-0">
+                  <span className="text-[0.95rem] text-bone">{line.label}</span>
+                  {line.note && <span className="label mt-0.5 block">{line.note}</span>}
+                </dt>
+                <dd className="figure shrink-0 text-[0.95rem] text-bone">
+                  {formatMoney(line.amount, currency, { cents: true })}
+                </dd>
+              </div>
+            ))}
+
+            {extraGuests > 0 && supplements > 0 && (
+              <p className="label mt-4">
+                Minimum includes {extraGuests} additional{' '}
+                {extraGuests === 1 ? 'guest' : 'guests'}
+              </p>
+            )}
+
+            <div className="mt-2 flex items-baseline justify-between gap-6 border-t border-hairline pt-4">
+              <dt className="text-[0.95rem] text-bone">Total</dt>
+              <dd className="figure text-lg text-gold-lit">
+                {formatMoney(price.total, currency, { cents: true })}
+              </dd>
+            </div>
+          </dl>
+        </details>
+
+        <p className="border-t border-hairline-soft p-6 text-xs leading-relaxed text-faint sm:px-8">
           {inFull
-            ? 'This table is prepaid in full. You will be taken to Fourvenues’ secure payment page, where the exact total, fees and taxes are confirmed before any charge. The amount is your minimum spend and is redeemable at the table.'
-            : 'You will be taken to Fourvenues’ secure payment page to complete the deposit. The balance settles at the table on the night. Exact totals, fees and taxes are confirmed there before any charge.'}
+            ? 'The table is prepaid. You will be taken to Fourvenues’ secure payment page, which confirms the exact amount before any charge.'
+            : `A deposit of ${formatMoney(deposit, currency)} holds the table; the balance settles on the night. Fourvenues’ secure payment page confirms the exact amount before any charge.`}
         </p>
       </div>
 

@@ -11,6 +11,7 @@ import { ReviewStep } from './steps/ReviewStep'
 import { SummaryContent } from './Summary'
 import { EMPTY_GUEST, STEPS, depositFor, type GuestDetails, type Selection } from './types'
 import { partyBounds, ratesFor } from '@/lib/floorplan'
+import { priceBreakdown } from '@/lib/pricing'
 import { formatMoney } from '@/lib/utils'
 
 export function ReserveFlow({
@@ -181,6 +182,7 @@ export function ReserveFlow({
         table_id: table?._id,
         normalized_table_name: table?.normalized_name,
         quantity: partySize,
+        minimum_spend: rate.price,
         full_name: guest.full_name.trim(),
         email: guest.email.trim(),
         phone: guest.phone.trim(),
@@ -349,7 +351,9 @@ export function ReserveFlow({
             </p>
             {selection.rate && (
               <p className="truncate text-sm text-gold-lit">
-                {formatMoney(depositFor(selection.rate) || selection.rate.price, currency)}
+                {formatMoney(priceBreakdown(selection.rate.price).total, currency, {
+                  cents: true,
+                })}
               </p>
             )}
           </div>

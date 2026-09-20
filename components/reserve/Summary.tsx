@@ -2,6 +2,7 @@
 
 import type { Selection } from './types'
 import { depositFor } from './types'
+import { priceBreakdown } from '@/lib/pricing'
 import { formatMoney, nightDate } from '@/lib/utils'
 
 /** Shared by the desktop rail and the mobile drawer. */
@@ -15,6 +16,7 @@ export function SummaryContent({
   const date = selection.event ? nightDate(selection.event) : undefined
   const rate = selection.rate
   const deposit = rate ? depositFor(rate) : 0
+  const total = rate ? priceBreakdown(rate.price).total : 0
 
   return (
     <>
@@ -36,18 +38,17 @@ export function SummaryContent({
         <div className="mt-6 border-t border-hairline pt-5">
           <div className="flex items-baseline justify-between gap-4">
             <span className="label">Minimum</span>
-            <span className="figure text-xl text-bone">
+            <span className="figure text-sm text-mute">
               {formatMoney(rate.price, currency)}
             </span>
           </div>
-          {deposit > 0 && (
-            <div className="mt-3 flex items-baseline justify-between gap-4">
-              <span className="label">
-                {deposit >= rate.price ? 'Payable now' : 'Deposit now'}
-              </span>
-              <span className="text-sm text-gold-lit">{formatMoney(deposit, currency)}</span>
-            </div>
-          )}
+          <div className="mt-3 flex items-baseline justify-between gap-4">
+            <span className="label">Total</span>
+            <span className="figure text-xl text-gold-lit">
+              {formatMoney(total, currency, { cents: true })}
+            </span>
+          </div>
+          <p className="label mt-2">Charges and tax included</p>
         </div>
       )}
 
