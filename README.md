@@ -25,10 +25,27 @@ Copy `.env.example` to `.env.local` and fill in:
 | `FOURVENUES_BASE_URL` | `https://channels-service.fourvenues.com` (prod) or `…-alpha…` (staging). |
 | `FOURVENUES_ORGANIZATION_ID` | Optional. Injected as `organization_id` on every request. |
 | `FOURVENUES_MOCK` | `1` forces mock data, `0` forces the live API. Omit to auto-detect from the key. |
-| `NEXT_PUBLIC_SITE_URL` | Absolute origin used to build the payment redirect URLs. |
+| `NEXT_PUBLIC_SITE_URL` | Absolute origin used to build the payment redirect URLs. Optional on Vercel, where it is derived from the request; set it once the domain is final so redirects stay stable across preview deployments. |
+| `SITE_PASSWORD` | Password for the access gate. Unset disables the gate. |
 
 The moment `FOURVENUES_API_KEY` is set, every screen reads live data. Nothing
 else changes.
+
+## Access gate
+
+The preview deployment sits behind a password. The repository is public, so the
+password itself lives only in `SITE_PASSWORD` in the hosting environment and
+never in the source — the code holds the mechanism, not the secret.
+
+`middleware.ts` guards every route except `/gate` and the few assets that
+screen needs. The cookie carries a SHA-256 of the password rather than the
+password itself, comparison is constant-time, and the original destination is
+preserved so a shared deep link still lands where it was meant to. With
+`SITE_PASSWORD` unset the gate is simply off, which keeps local development and
+mock deployments unencumbered.
+
+To open the site to the public, remove `SITE_PASSWORD` from the environment and
+redeploy. Nothing else changes.
 
 ## The reservation flow
 
