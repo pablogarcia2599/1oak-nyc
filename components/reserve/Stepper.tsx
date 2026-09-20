@@ -25,6 +25,8 @@ export function Stepper({
           const done = i < current
           const active = i === current
 
+          const last = i === steps.length - 1
+
           return (
             <li key={label} className="min-w-0 flex-1">
               <button
@@ -32,13 +34,18 @@ export function Stepper({
                 disabled={i > current}
                 onClick={() => onJump(i)}
                 aria-current={active ? 'step' : undefined}
-                className="group block w-full text-left disabled:cursor-default"
+                className={cn(
+                  'group block w-full disabled:cursor-default',
+                  last ? 'text-right' : 'text-left',
+                )}
               >
-                {/* The label rides above its own segment on a wide screen;
-                    on a phone only the current one is worth the room. */}
+                {/* The label rides above its own segment on a wide screen; on
+                    a phone only the current one is worth the room. A segment is
+                    a quarter of the width, so the label is left to run past it
+                    rather than be silently clipped mid-word. */}
                 <span
                   className={cn(
-                    'mb-2.5 block truncate text-[0.6875rem] font-medium uppercase tracking-[0.12em] transition-colors duration-300',
+                    'mb-2.5 block whitespace-nowrap text-[0.6875rem] font-medium uppercase tracking-[0.12em] transition-colors duration-300',
                     active ? 'text-bone' : 'text-faint',
                     done && 'group-hover:text-gold-lit',
                     !active && 'hidden sm:block',

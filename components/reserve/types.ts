@@ -30,7 +30,7 @@ export const EMPTY_GUEST: GuestDetails = {
   accepts_terms: false,
 }
 
-export const STEPS = ['The night', 'The table', 'Your details', 'Confirm'] as const
+export const STEPS = ['The night', 'The table', 'Details', 'Confirm'] as const
 
 /** Deposit due now for a rate, per the Channel Manager deposit object. */
 export function depositFor(rate: FvTableRate): number {
