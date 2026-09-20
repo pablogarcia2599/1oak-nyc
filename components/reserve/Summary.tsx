@@ -36,7 +36,7 @@ export function SummaryContent({
         <div className="mt-6 border-t border-hairline pt-5">
           <div className="flex items-baseline justify-between gap-4">
             <span className="label">Minimum</span>
-            <span className="heading text-xl text-bone">
+            <span className="figure text-xl text-bone">
               {formatMoney(rate.price, currency)}
             </span>
           </div>

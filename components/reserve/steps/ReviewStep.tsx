@@ -52,7 +52,7 @@ export function ReviewStep({
       <div className="material mt-10 p-6 sm:p-8">
         <div className="flex items-baseline justify-between gap-6">
           <span className="label">Minimum spend</span>
-          <span className="heading text-2xl text-bone">{formatMoney(rate.price, currency)}</span>
+          <span className="figure text-2xl text-bone">{formatMoney(rate.price, currency)}</span>
         </div>
         {supplements > 0 && (
           <div className="mt-4 flex items-baseline justify-between gap-6">
@@ -65,7 +65,7 @@ export function ReviewStep({
         <div className="my-6 h-px bg-hairline" />
         <div className="flex items-baseline justify-between gap-6">
           <span className="label label-gold">{inFull ? 'Payable now in full' : 'Due now'}</span>
-          <span className="heading text-3xl text-gold-lit">{formatMoney(payNow, currency)}</span>
+          <span className="figure text-3xl text-gold-lit">{formatMoney(payNow, currency)}</span>
         </div>
         <p className="mt-6 text-xs leading-relaxed text-faint">
           {inFull

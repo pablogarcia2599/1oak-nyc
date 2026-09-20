@@ -4,3 +4,7 @@ out/
 .env*.local
 .DS_Store
 *.tsbuildinfo
+.vercel
+.env*
+# …but the template, which carries only empty values, is tracked.
+!.env.example

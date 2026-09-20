@@ -7,9 +7,37 @@ import { EventCard } from '@/components/EventCard'
 import { getEvents } from '@/lib/fourvenues/events'
 import { getRoomCatalogue } from '@/lib/fourvenues/bookings'
 import { formatMoney } from '@/lib/utils'
-import { FAQ, MANIFESTO, ROOM_BLURBS, VENUE } from '@/content/venue'
+import { FAQ, ROOM_BLURBS, VENUE } from '@/content/venue'
 
 export const revalidate = 60
+
+/**
+ * Section chrome: an index mark in the margin and the content beside it.
+ * Deliberately not the centred eyebrow-headline-rule stack — that rhythm,
+ * repeated down a page, is what makes a site read as generated.
+ */
+function Section({
+  id,
+  index,
+  title,
+  children,
+}: {
+  id?: string
+  index: string
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <section id={id} className="scroll-mt-20 border-t border-hairline-soft">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-8 sm:py-24 lg:grid-cols-[9rem_1fr] lg:gap-16">
+        <p className="label lg:sticky lg:top-28 lg:self-start">
+          {index} — {title}
+        </p>
+        <div className="min-w-0">{children}</div>
+      </div>
+    </section>
+  )
+}
 
 export default async function HomePage() {
   let events: Awaited<ReturnType<typeof getEvents>> = []
@@ -40,151 +68,137 @@ export default async function HomePage() {
 
       <main>
         {/* ── Hero ───────────────────────────────────────────────────────── */}
-        <section className="flex min-h-[88svh] flex-col items-center justify-center px-6 pb-20 pt-28 text-center sm:min-h-screen">
-          <Reveal>
-            <Wordmark className="h-32 sm:h-44 lg:h-52" priority />
-          </Reveal>
+        <section className="flex min-h-svh flex-col justify-between px-4 pb-10 pt-28 sm:px-8 sm:pb-14">
+          <div className="flex flex-1 flex-col justify-center">
+            {/* The mark leads. A headline big enough to compete with it would
+                only shout over the one asset the brand actually owns. */}
+            <Reveal className="flex justify-center">
+              <Wordmark className="h-40 sm:h-52 lg:h-60" priority />
+            </Reveal>
 
-          <Reveal delay={150}>
-            <h1 className="heading heading-xl mt-10 text-bone">New York</h1>
-          </Reveal>
-
-          <Reveal delay={250} className="mt-8">
-            <span className="rule block" />
-          </Reveal>
-
-          <Reveal delay={320}>
-            <p className="lede mt-8 max-w-md">{VENUE.tagline}</p>
-          </Reveal>
+            <Reveal delay={160}>
+              <h1 className="wordmark-echo mt-8 text-center sm:mt-10">
+                One of a kind
+              </h1>
+            </Reveal>
+          </div>
 
           <Reveal
-            delay={420}
-            className="mt-12 flex w-full max-w-xs flex-col gap-3 sm:max-w-none sm:flex-row sm:justify-center"
+            delay={280}
+            className="flex flex-col gap-6 border-t border-hairline-soft pt-8 sm:flex-row sm:items-end sm:justify-between"
           >
-            <Link href="/reserve" className="btn btn-primary">
+            <dl className="grid grid-cols-2 gap-x-10 gap-y-5 sm:flex sm:gap-12">
+              {[
+                ['Where', VENUE.neighborhood],
+                ['Nights', 'Thu — Sat'],
+                ['Tables', fromPrice ? `From ${formatMoney(fromPrice, currency)}` : 'On request'],
+              ].map(([term, value]) => (
+                <div key={term}>
+                  <dt className="label">{term}</dt>
+                  <dd className="mt-1.5 text-[0.95rem] text-bone">{value}</dd>
+                </div>
+              ))}
+            </dl>
+
+            <Link href="/reserve" className="btn btn-primary w-full sm:w-auto">
               Reserve a table
             </Link>
-            <Link href="#nights" className="btn btn-quiet">
-              See the calendar
-            </Link>
           </Reveal>
-        </section>
-
-        {/* ── Manifesto ──────────────────────────────────────────────────── */}
-        <section className="border-y border-hairline-soft px-6 py-20 sm:py-28">
-          <div className="mx-auto max-w-2xl text-center">
-            {MANIFESTO.map((line, i) => (
-              <Reveal key={line} delay={i * 120}>
-                <p className="heading heading-md py-2 text-mute">{line}</p>
-              </Reveal>
-            ))}
-          </div>
         </section>
 
         {/* ── Nights ─────────────────────────────────────────────────────── */}
-        <section id="nights" className="scroll-mt-20 px-4 py-20 sm:px-8 sm:py-28">
-          <div className="mx-auto max-w-7xl">
-            <Reveal className="max-w-xl">
-              <p className="label label-gold">The calendar</p>
-              <h2 className="heading heading-lg mt-5 text-bone">Upcoming nights</h2>
-              <p className="mt-6 text-[0.95rem] leading-relaxed text-mute">
-                Tables are released night by night. When a room is gone, it is gone.
+        <Section id="nights" index="01" title="The calendar">
+          <h2 className="heading heading-lg text-bone">Upcoming nights</h2>
+          <p className="prose-lede mt-5 max-w-lg">
+            Tables are released night by night. When a room is gone, it is gone.
+          </p>
+
+          <div className="mt-10">
+            {eventsError ? (
+              <p className="material p-6 text-sm leading-relaxed text-mute">
+                The calendar is briefly unavailable. Write to{' '}
+                <a href={`mailto:${VENUE.email}`} className="text-gold-lit">
+                  {VENUE.email}
+                </a>{' '}
+                and a host will take it from there.
               </p>
-            </Reveal>
-
-            <div className="mt-12 sm:mt-16">
-              {eventsError ? (
-                <p className="material p-8 text-sm leading-relaxed text-mute">
-                  The calendar is briefly unavailable. Write to{' '}
-                  <a href={`mailto:${VENUE.email}`} className="text-gold-lit">
-                    {VENUE.email}
-                  </a>{' '}
-                  and a host will take it from there.
-                </p>
-              ) : events.length === 0 ? (
-                <p className="material p-8 text-sm text-mute">
-                  No nights on sale right now. Check back shortly.
-                </p>
-              ) : (
-                <div className="grid-hairline grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                  {events.map((event, i) => (
-                    <Reveal key={event._id} delay={i * 70}>
-                      <EventCard event={event} fromPrice={fromPrice} />
-                    </Reveal>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* ── The room ───────────────────────────────────────────────────── */}
-        <section id="rooms" className="scroll-mt-20 border-t border-hairline-soft px-4 py-20 sm:px-8 sm:py-28">
-          <div className="mx-auto max-w-7xl">
-            <Reveal className="max-w-xl">
-              <p className="label label-gold">The room</p>
-              <h2 className="heading heading-lg mt-5 text-bone">Where you sit</h2>
-              <p className="mt-6 text-[0.95rem] leading-relaxed text-mute">
-                Twenty-three tables across one floor. Each carries a minimum spend,
-                redeemable in bottle service on the night.
+            ) : events.length === 0 ? (
+              <p className="material p-6 text-sm text-mute">
+                No nights on sale right now. Check back shortly.
               </p>
-            </Reveal>
-
-            {rooms.length > 0 ? (
-              <ul className="mt-12 border-t border-hairline-soft sm:mt-16">
-                {rooms.map((room, i) => (
-                  <Reveal key={room.rate._id} delay={i * 60} as="li">
-                    <div className="grid grid-cols-1 gap-3 border-b border-hairline-soft py-7 sm:grid-cols-[1fr_auto] sm:items-baseline sm:gap-10">
-                      <div>
-                        <h3 className="heading heading-md text-bone">{room.rate.name}</h3>
-                        <p className="mt-3 max-w-xl text-[0.95rem] leading-relaxed text-mute">
-                          {ROOM_BLURBS[room.rate.name] ??
-                            `${room.tableCount} ${room.tableCount === 1 ? 'table' : 'tables'} on the main floor.`}
-                        </p>
-                      </div>
-                      <div className="sm:text-right">
-                        <p className="heading text-xl text-gold-lit">
-                          {formatMoney(room.rate.price, currency)}
-                        </p>
-                        <p className="label mt-2">
-                          {room.minGuests}–{room.maxGuests} guests ·{' '}
-                          {room.tableCount} {room.tableCount === 1 ? 'table' : 'tables'}
-                        </p>
-                      </div>
-                    </div>
+            ) : (
+              <div className="grid-hairline grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                {events.map((event, i) => (
+                  <Reveal key={event._id} delay={i * 60}>
+                    <EventCard event={event} fromPrice={fromPrice} />
                   </Reveal>
                 ))}
-              </ul>
-            ) : (
-              <p className="material mt-12 p-8 text-sm text-mute">
-                Open the reservation flow to see every table on sale.
-              </p>
+              </div>
             )}
-
-            <Reveal delay={180} className="mt-12 flex justify-center sm:justify-start">
-              <Link href="/reserve" className="btn btn-primary w-full sm:w-auto">
-                Choose your table
-              </Link>
-            </Reveal>
           </div>
-        </section>
+        </Section>
+
+        {/* ── The room ───────────────────────────────────────────────────── */}
+        <Section id="rooms" index="02" title="The room">
+          <h2 className="heading heading-lg text-bone">Where you sit</h2>
+          <p className="prose-lede mt-5 max-w-lg">
+            Twenty-three tables across one floor. Each carries a minimum spend,
+            redeemable in bottle service on the night.
+          </p>
+
+          {rooms.length > 0 ? (
+            <ul className="mt-10">
+              {rooms.map((room, i) => (
+                <Reveal key={room.rate._id} delay={i * 50} as="li">
+                  <div className="grid gap-4 border-b border-hairline-soft py-6 sm:grid-cols-[1fr_auto] sm:items-start sm:gap-12">
+                    <div>
+                      <h3 className="heading heading-md text-bone">{room.rate.name}</h3>
+                      <p className="mt-2.5 max-w-xl text-[0.95rem] leading-relaxed text-mute">
+                        {ROOM_BLURBS[room.rate.name] ??
+                          `${room.tableCount} ${room.tableCount === 1 ? 'table' : 'tables'} on the main floor.`}
+                      </p>
+                    </div>
+                    <div className="flex items-baseline gap-6 sm:flex-col sm:items-end sm:gap-1.5">
+                      <p className="figure text-2xl text-gold-lit">
+                        {formatMoney(room.rate.price, currency)}
+                      </p>
+                      <p className="label">
+                        {room.minGuests}–{room.maxGuests} guests
+                      </p>
+                    </div>
+                  </div>
+                </Reveal>
+              ))}
+            </ul>
+          ) : (
+            <p className="material mt-10 p-6 text-sm text-mute">
+              Open the reservation flow to see every table on sale.
+            </p>
+          )}
+
+          <Link href="/reserve" className="btn btn-primary mt-10 w-full sm:w-auto">
+            Choose your table
+          </Link>
+        </Section>
 
         {/* ── Visit ──────────────────────────────────────────────────────── */}
-        <section id="visit" className="scroll-mt-20 border-t border-hairline-soft px-4 py-20 sm:px-8 sm:py-28">
-          <div className="mx-auto grid max-w-7xl gap-16 lg:grid-cols-2 lg:gap-24">
-            <Reveal>
-              <p className="label label-gold">Visit</p>
-              <h2 className="heading heading-lg mt-5 text-bone">453 West 17th</h2>
-              <dl className="mt-10 border-t border-hairline-soft">
+        <Section id="visit" index="03" title="Visit">
+          <div className="grid gap-14 lg:grid-cols-2 lg:gap-16">
+            <div>
+              <h2 className="heading heading-lg text-bone">453 West 17th</h2>
+              <dl className="mt-8">
                 {[
                   ['Address', VENUE.address],
                   ['Hours', VENUE.hours],
                   ['Age', VENUE.agePolicy],
                   ['Dress code', VENUE.dressCode],
-                ].map(([label, value]) => (
-                  <div key={label} className="border-b border-hairline-soft py-5">
-                    <dt className="label">{label}</dt>
-                    <dd className="mt-2 text-[0.95rem] leading-relaxed text-bone">{value}</dd>
+                ].map(([term, value]) => (
+                  <div
+                    key={term}
+                    className="grid gap-1 border-b border-hairline-soft py-4 sm:grid-cols-[7rem_1fr] sm:gap-6"
+                  >
+                    <dt className="label sm:pt-0.5">{term}</dt>
+                    <dd className="text-[0.95rem] leading-relaxed text-bone">{value}</dd>
                   </div>
                 ))}
               </dl>
@@ -192,32 +206,32 @@ export default async function HomePage() {
                 href={VENUE.mapsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="btn btn-quiet mt-10 w-full sm:w-auto"
+                className="btn btn-quiet mt-8 w-full sm:w-auto"
               >
                 Open in maps
               </a>
-            </Reveal>
+            </div>
 
-            <Reveal delay={120}>
-              <p className="label label-gold">Before you come</p>
-              <div className="mt-10 border-t border-hairline-soft">
+            <div>
+              <h2 className="heading heading-lg text-bone">Before you come</h2>
+              <div className="mt-8">
                 {FAQ.map(item => (
-                  <details key={item.q} className="group border-b border-hairline-soft py-5">
+                  <details key={item.q} className="group border-b border-hairline-soft py-4">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-[0.95rem] text-bone transition-colors hover:text-gold-lit">
                       {item.q}
                       <span className="shrink-0 text-gold transition-transform duration-300 group-open:rotate-45">
                         +
                       </span>
                     </summary>
-                    <p className="mt-4 max-w-lg text-[0.95rem] leading-relaxed text-mute">
+                    <p className="mt-3 max-w-lg text-[0.95rem] leading-relaxed text-mute">
                       {item.a}
                     </p>
                   </details>
                 ))}
               </div>
-            </Reveal>
+            </div>
           </div>
-        </section>
+        </Section>
       </main>
 
       <SiteFooter />

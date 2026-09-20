@@ -100,9 +100,22 @@ moments — on modern app materials. No gradients, no glow, no CSS textures.
   panels, so a card reads the same wherever it sits. Soft radii throughout.
 - **Bars.** The header and the mobile action bar are frosted (`.glass`), with
   an opaque fallback where `backdrop-filter` is unavailable.
-- **Type.** Cormorant Garamond for headings, in sentence case; Jost at 300 for
-  everything else. Small caps are for eyebrows and field labels only — never
-  for buttons, which read as shouting rather than as luxury.
+- **Type.** One grotesque, Archivo, for everything. Display sizes are caps at
+  weight 400 with negative tracking; body is sentence case; figures are
+  tabular. No serif anywhere.
+
+  This is deliberate. A high-contrast free serif over a Futura clone —
+  Cormorant Garamond and Jost, say — is the house style of every luxury
+  template, and it reads as an imitation of luxury rather than the thing. It
+  is also unfaithful here: the venue letters its own materials, the seating
+  chart and the wordmark's "NEW YORK", in caps grotesque. Wide tracking is
+  used for exactly one line, `.wordmark-echo`, because that is how the lockup
+  itself sets its subtitle.
+- **Composition.** Sections carry an index mark in the margin rather than the
+  centred eyebrow-headline-rule stack; repeated down a page, that rhythm is
+  what makes a site read as generated. The home page opens on the mark at
+  full size with one quiet line beneath it — a headline large enough to
+  compete with the shield would only shout over the one asset the brand owns.
 - **Motion.** One easing curve (`--ease-soft`), a short rise on reveal, a
   press-scale on controls. Nothing bounces.
 

@@ -15,7 +15,7 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-8 sm:py-24">
         <div className="flex flex-col items-center text-center">
           <Wordmark className="h-16 sm:h-20" />
-          <p className="lede mt-8 max-w-sm">{VENUE.tagline}</p>
+          <p className="label mt-6">{VENUE.tagline}</p>
         </div>
 
         <div className="mt-16 grid gap-10 border-t border-hairline-soft pt-12 sm:grid-cols-3 sm:gap-8">

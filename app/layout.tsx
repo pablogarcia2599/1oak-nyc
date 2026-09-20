@@ -1,20 +1,19 @@
 import type { Metadata, Viewport } from 'next'
-import { Cormorant_Garamond, Jost } from 'next/font/google'
+import { Archivo } from 'next/font/google'
 import './globals.css'
 import { VENUE } from '@/content/venue'
 
-const jost = Jost({
+/**
+ * One grotesque for the whole site.
+ *
+ * The venue sets its own materials — the seating chart, the wordmark's "NEW
+ * YORK" — in caps grotesque, so this is the brand's voice rather than an
+ * imported idea of luxury. It also avoids the free-serif-plus-Futura pairing
+ * that every template reaches for.
+ */
+const archivo = Archivo({
   subsets: ['latin'],
-  weight: ['300', '400'],
-  variable: '--font-jost',
-  display: 'swap',
-})
-
-const cormorant = Cormorant_Garamond({
-  subsets: ['latin'],
-  weight: ['300', '400'],
-  style: ['normal', 'italic'],
-  variable: '--font-cormorant',
+  variable: '--font-archivo',
   display: 'swap',
 })
 
@@ -47,7 +46,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${jost.variable} ${cormorant.variable}`}>
+    <html lang="en" className={archivo.variable}>
       <body className="min-h-screen antialiased">{children}</body>
     </html>
   )

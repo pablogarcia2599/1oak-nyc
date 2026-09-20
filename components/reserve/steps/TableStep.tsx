@@ -159,7 +159,7 @@ export function TableStep({
           <dl className="grid grid-cols-2 gap-px bg-hairline-soft">
             <div className="bg-ink p-5 sm:p-6">
               <dt className="label">Minimum spend</dt>
-              <dd className="heading mt-2 text-2xl text-bone">
+              <dd className="figure mt-2 text-2xl text-bone">
                 {formatMoney(rate.price, currency)}
               </dd>
             </div>
@@ -167,7 +167,7 @@ export function TableStep({
               <dt className="label">
                 {depositFor(rate) >= rate.price ? 'Payable now' : 'Deposit now'}
               </dt>
-              <dd className="heading mt-2 text-2xl text-gold-lit">
+              <dd className="figure mt-2 text-2xl text-gold-lit">
                 {formatMoney(depositFor(rate) || rate.price, currency)}
               </dd>
             </div>

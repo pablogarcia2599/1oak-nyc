@@ -91,7 +91,7 @@ export function NightStep({
           >
             −
           </button>
-          <span className="heading w-14 text-center text-4xl tabular-nums text-bone">
+          <span className="figure w-14 text-center text-4xl text-bone">
             {partySize}
           </span>
           <button

@@ -17,7 +17,7 @@ export function EventCard({ event, fromPrice }: { event: FvEvent; fromPrice?: nu
     >
       <div>
         <p className="label label-gold">{date.weekdayLong}</p>
-        <p className="heading mt-5 text-[clamp(3rem,13vw,4.25rem)] text-bone">{date.day}</p>
+        <p className="figure mt-5 text-[clamp(3rem,13vw,4.25rem)] leading-none text-bone">{date.day}</p>
         <p className="label mt-2">
           {date.monthLong} {date.year}
         </p>
