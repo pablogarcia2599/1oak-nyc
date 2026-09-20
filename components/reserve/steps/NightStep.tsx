@@ -74,10 +74,10 @@ export function NightStep({
               <span className="text-gold-lit">
                 {bounds.min} to {bounds.max} guests
               </span>
-              . We show only the tables that can take your party.
+              .
             </>
           ) : (
-            'Choose a night and we will show the tables that can take your party.'
+            'Choose a night to see the tables it can take.'
           )}
         </p>
 

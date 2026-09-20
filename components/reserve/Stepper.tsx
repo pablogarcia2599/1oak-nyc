@@ -2,6 +2,13 @@
 
 import { cn } from '@/lib/utils'
 
+/**
+ * Four segments that fill as the reservation advances.
+ *
+ * A luxury room does not explain its own booking form, so this carries no
+ * instructions: the segments show how far along you are, the step's own
+ * heading says what it wants, and a completed segment takes you back to it.
+ */
 export function Stepper({
   steps,
   current,
@@ -12,51 +19,44 @@ export function Stepper({
   onJump: (index: number) => void
 }) {
   return (
-    <div className="border-b border-hairline-soft pb-5">
-      {/* Mobile: one line of text beats four cramped chips. */}
-      <div className="flex items-center justify-between gap-4 sm:hidden">
-        <p className="label">
-          Step {current + 1} of {steps.length}
-        </p>
-        <p className="label label-gold">{steps[current]}</p>
-      </div>
-      <div
-        className="mt-3 h-px w-full bg-hairline sm:hidden"
-        role="progressbar"
-        aria-valuenow={current + 1}
-        aria-valuemin={1}
-        aria-valuemax={steps.length}
-      >
-        <span
-          className="block h-px bg-gold transition-[width] duration-500"
-          style={{ width: `${((current + 1) / steps.length) * 100}%` }}
-        />
-      </div>
-
-      <ol className="hidden items-center gap-8 sm:flex">
+    <nav aria-label="Reservation progress">
+      <ol className="flex items-end gap-2 sm:gap-3">
         {steps.map((label, i) => {
           const done = i < current
           const active = i === current
+
           return (
-            <li key={label}>
+            <li key={label} className="min-w-0 flex-1">
               <button
                 type="button"
                 disabled={i > current}
                 onClick={() => onJump(i)}
-                className={cn(
-                  'label transition-colors duration-300',
-                  active && 'text-gold-lit',
-                  done && 'text-bone hover:text-gold-lit',
-                  !active && !done && 'cursor-not-allowed text-faint',
-                )}
+                aria-current={active ? 'step' : undefined}
+                className="group block w-full text-left disabled:cursor-default"
               >
-                <span className="mr-2 tabular-nums">{String(i + 1).padStart(2, '0')}</span>
-                {label}
+                {/* The label rides above its own segment on a wide screen;
+                    on a phone only the current one is worth the room. */}
+                <span
+                  className={cn(
+                    'mb-2.5 block truncate text-[0.6875rem] font-medium uppercase tracking-[0.12em] transition-colors duration-300',
+                    active ? 'text-bone' : 'text-faint',
+                    done && 'group-hover:text-gold-lit',
+                    !active && 'hidden sm:block',
+                  )}
+                >
+                  {label}
+                </span>
+                <span
+                  className={cn(
+                    'block h-px w-full transition-colors duration-500',
+                    active || done ? 'bg-gold' : 'bg-hairline',
+                  )}
+                />
               </button>
             </li>
           )
         })}
       </ol>
-    </div>
+    </nav>
   )
 }

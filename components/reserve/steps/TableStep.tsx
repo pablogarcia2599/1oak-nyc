@@ -84,9 +84,6 @@ export function TableStep({
     <div className="space-y-8">
       <div>
         {heading}
-        <p className="mt-4 text-[0.95rem] leading-relaxed text-mute">
-          Tap the plan, or pick a room below.
-        </p>
 
         {zones.length > 1 && (
           <div className="mt-6 flex flex-wrap gap-2">

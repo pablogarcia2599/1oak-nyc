@@ -33,13 +33,9 @@ export default async function ReservePage({
       <SiteHeader />
 
       <main className="pt-28 sm:pt-36">
-        <header className="mx-auto mb-12 max-w-7xl px-4 sm:mb-16 sm:px-8">
-          <p className="label label-gold">Reservations</p>
-          <h1 className="heading heading-lg mt-4 text-bone">Take the room</h1>
-          <p className="mt-5 max-w-lg text-[0.95rem] leading-relaxed text-mute">
-            Four steps: the night, the table, your details, done.
-          </p>
-        </header>
+        {/* No page title and no explainer: a room like this does not narrate
+            its own booking form. The heading of each step carries the page. */}
+        <h1 className="sr-only">Table reservations</h1>
 
         {failed ? (
           <div className="mx-auto max-w-xl px-4 sm:px-8">

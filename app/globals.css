@@ -101,8 +101,9 @@
     font-weight: 400;
     line-height: 0.98;
     /* Negative tracking shrinks the space character too, which runs words
-       together at display sizes. Give it back here. */
-    word-spacing: 0.08em;
+       together at display sizes. Give it back, with enough margin for the
+       diagonals that close a gap optically (…K Y…). */
+    word-spacing: 0.14em;
   }
 
   .heading-xl {
