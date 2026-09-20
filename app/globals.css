@@ -1,0 +1,295 @@
+@import "tailwindcss";
+
+/* ─── 1 OAK New York ────────────────────────────────────────────────────────
+   The house identity — near-black, the mark's own bronze, a serif for the big
+   moments — built on modern app materials: soft radii, translucent surfaces,
+   frosted bars, sentence-case controls. Luxury from restraint and space, not
+   from gradients and glow.                                                 */
+
+@theme {
+  --color-ink: #070809;        /* page */
+  --color-ink-sunk: #050506;   /* footer, wells */
+
+  /* Surfaces are translucent white over the page, the way dark-mode material
+     works: they stay coherent wherever they sit. */
+  --color-surface: rgba(255, 255, 255, 0.045);
+  --color-surface-strong: rgba(255, 255, 255, 0.075);
+  --color-hairline: rgba(255, 255, 255, 0.09);
+  --color-hairline-soft: rgba(255, 255, 255, 0.055);
+
+  --color-bone: #f0ece4;       /* primary text */
+  --color-mute: #9a948a;       /* secondary text */
+  --color-faint: #66625b;      /* tertiary text */
+
+  --color-gold: #b08749;       /* the mark's own gold */
+  --color-gold-lit: #d3ae74;   /* gold that must pass contrast as text */
+  --color-gold-deep: #7a5e33;
+
+  --font-display: var(--font-cormorant), "Didot", ui-serif, Georgia, serif;
+  --font-sans: var(--font-jost), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-sm: 0.75rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.375rem;
+  --radius-xl: 1.75rem;
+
+  /* A gentle overshoot: movement should feel settled, never bouncy. */
+  --ease-soft: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    background: var(--color-ink);
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: var(--color-ink);
+    color: var(--color-bone);
+    font-family: var(--font-sans);
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+    /* `clip`, not `hidden`: `hidden` turns <body> into a scroll container,
+       which breaks the sticky reservation summary. */
+    overflow-x: clip;
+  }
+
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: var(--color-gold);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-gold-lit);
+    outline-offset: 3px;
+    border-radius: var(--radius-sm);
+  }
+
+  @media (pointer: fine) {
+    ::-webkit-scrollbar { width: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+      background: var(--color-surface-strong);
+      border-radius: 999px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+@layer components {
+  /* ── Type ─────────────────────────────────────────────────────────────── */
+
+  .heading {
+    font-family: var(--font-display);
+    font-weight: 300;
+    line-height: 1.06;
+    letter-spacing: -0.012em;
+  }
+
+  .heading-xl { font-size: clamp(2.75rem, 11vw, 5.5rem); }
+  .heading-lg { font-size: clamp(2rem, 6.6vw, 3.4rem); }
+  .heading-md { font-size: clamp(1.45rem, 4.4vw, 2rem); }
+
+  /* Small caps, used only for section eyebrows and field labels — never for
+     buttons, which read as shouting rather than as luxury. */
+  .label {
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-mute);
+  }
+  .label-gold { color: var(--color-gold-lit); }
+
+  .lede {
+    font-family: var(--font-display);
+    font-size: clamp(1.15rem, 3.4vw, 1.45rem);
+    line-height: 1.6;
+    color: var(--color-mute);
+  }
+
+  .rule {
+    width: 2.5rem;
+    height: 1px;
+    background: var(--color-gold);
+  }
+
+  /* ── Materials ────────────────────────────────────────────────────────── */
+
+  .material {
+    background: var(--color-surface);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-md);
+  }
+
+  .material-lg {
+    background: var(--color-surface);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-lg);
+  }
+
+  /* Frosted bars. The fallback matters: without backdrop-filter the bar must
+     still be opaque enough to sit over content. */
+  .glass {
+    background: color-mix(in srgb, var(--color-ink) 82%, transparent);
+  }
+
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass {
+      background: color-mix(in srgb, var(--color-ink) 62%, transparent);
+      -webkit-backdrop-filter: blur(24px) saturate(160%);
+      backdrop-filter: blur(24px) saturate(160%);
+    }
+  }
+
+  /* ── Controls ─────────────────────────────────────────────────────────── */
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3.25rem;
+    padding: 0 1.75rem;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    font-size: 0.9375rem;
+    font-weight: 400;
+    letter-spacing: 0.005em;
+    cursor: pointer;
+    transition:
+      background-color 0.25s var(--ease-soft),
+      border-color 0.25s var(--ease-soft),
+      color 0.25s var(--ease-soft),
+      transform 0.18s var(--ease-soft),
+      opacity 0.25s var(--ease-soft);
+  }
+  .btn:active:not(:disabled) { transform: scale(0.975); }
+
+  .btn-primary {
+    background: var(--color-gold);
+    color: #0b0906;
+    font-weight: 400;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--color-gold-lit); }
+  .btn-primary:disabled {
+    background: var(--color-surface-strong);
+    color: var(--color-faint);
+    cursor: not-allowed;
+  }
+
+  .btn-quiet {
+    background: var(--color-surface);
+    border-color: var(--color-hairline);
+    color: var(--color-bone);
+  }
+  .btn-quiet:hover:not(:disabled) {
+    background: var(--color-surface-strong);
+    border-color: var(--color-gold);
+  }
+  .btn-quiet:disabled { color: var(--color-faint); cursor: not-allowed; }
+
+  .btn-plain {
+    background: transparent;
+    color: var(--color-mute);
+    padding: 0 1rem;
+  }
+  .btn-plain:hover:not(:disabled) { color: var(--color-bone); }
+
+  /* A pill for a table number, a room, a filter. */
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    min-width: 2.75rem;
+    padding: 0 0.9rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-hairline);
+    background: var(--color-surface);
+    color: var(--color-bone);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition:
+      background-color 0.2s var(--ease-soft),
+      border-color 0.2s var(--ease-soft),
+      color 0.2s var(--ease-soft),
+      transform 0.16s var(--ease-soft);
+  }
+  .chip:active:not(:disabled) { transform: scale(0.95); }
+  .chip[aria-pressed='true'] {
+    background: var(--color-gold);
+    border-color: var(--color-gold);
+    color: #0b0906;
+  }
+  .chip:disabled {
+    color: var(--color-faint);
+    background: transparent;
+    cursor: not-allowed;
+  }
+
+  /* ── Forms ────────────────────────────────────────────────────────────── */
+
+  .field {
+    width: 100%;
+    min-height: 3.25rem;
+    background: var(--color-surface);
+    border: 1px solid var(--color-hairline);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+    color: var(--color-bone);
+    /* 16px keeps iOS Safari from zooming the page on focus. */
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.25s var(--ease-soft), background-color 0.25s var(--ease-soft);
+  }
+  .field::placeholder { color: var(--color-faint); }
+  .field:focus {
+    outline: none;
+    border-color: var(--color-gold);
+    background: var(--color-surface-strong);
+  }
+
+  .check {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+    accent-color: #b08749;
+  }
+
+  /* A hairline grid that needs no wrapper colour hack. */
+  .grid-hairline {
+    display: grid;
+    gap: 1px;
+    background: var(--color-hairline-soft);
+    border: 1px solid var(--color-hairline-soft);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .grid-hairline > * { background: var(--color-ink); }
+}
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* Scale and fade only — the pill's placement lives on its wrapper, and a
+   transform here would overwrite it. */
+@keyframes pop {
+  from { opacity: 0; transform: scale(0.94); }
+  to { opacity: 1; transform: none; }
+}
