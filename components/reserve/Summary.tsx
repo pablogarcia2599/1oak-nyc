@@ -43,12 +43,17 @@ export function SummaryContent({
             </span>
           </div>
           <div className="mt-3 flex items-baseline justify-between gap-4">
-            <span className="label">Total</span>
+            <span className="label">Due now</span>
             <span className="figure text-xl text-gold-lit">
+              {formatMoney(deposit || rate.price, currency)}
+            </span>
+          </div>
+          <div className="mt-3 flex items-baseline justify-between gap-4">
+            <span className="label">Est. total</span>
+            <span className="figure text-sm text-mute">
               {formatMoney(total, currency, { cents: true })}
             </span>
           </div>
-          <p className="label mt-2">Charges and tax included</p>
         </div>
       )}
 

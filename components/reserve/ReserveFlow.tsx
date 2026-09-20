@@ -336,9 +336,11 @@ export function ReserveFlow({
             </p>
             {selection.rate && (
               <p className="truncate text-sm text-gold-lit">
-                {formatMoney(priceBreakdown(selection.rate.price).total, currency, {
-                  cents: true,
-                })}
+                {formatMoney(
+                  depositFor(selection.rate) || selection.rate.price,
+                  currency,
+                )}{' '}
+                <span className="text-faint">due now</span>
               </p>
             )}
           </div>
