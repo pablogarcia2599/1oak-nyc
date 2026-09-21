@@ -111,7 +111,7 @@ export function GuestStep({
       </div>
 
       <div className="mt-10 space-y-3">
-        {/* The house policy is the one that gates the booking, so it reads as a
+        {/* The 1OAK policy is the one that gates the booking, so it reads as a
             requirement before anything is submitted — not only once it fails. */}
         <label
           data-invalid={errors.accepts_terms ? true : undefined}
@@ -140,8 +140,8 @@ export function GuestStep({
               Required
             </span>
             <span className="mt-1.5 block text-[0.875rem] leading-relaxed text-bone">
-              I accept the reservation terms and the house policy, including the dress code
-              and {VENUE.agePolicy.toLowerCase()}.
+              I accept the reservation terms and 1OAK policy, including the dress code and{' '}
+              {VENUE.agePolicy.toLowerCase()}.
             </span>
             {errors.accepts_terms && (
               <span className="mt-2 block text-xs text-red-400">
