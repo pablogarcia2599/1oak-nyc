@@ -2,19 +2,13 @@
 
 import { cn } from '@/lib/utils'
 
-/** Above this many options a grid stops being scannable and steps win. */
-const GRID_LIMIT = 12
-
 /**
- * The party size, as the venue's actual range rather than a counter.
+ * The party size as one control rather than three loose pieces.
  *
- * At 1 OAK a table seats 8 to 15, so there are eight answers — laying them out
- * shows the constraint without a sentence explaining it, and takes one tap
- * instead of seven. Each step also refetches availability, so a counter meant
- * six throwaway requests on the way to the answer.
- *
- * A venue with a wider range falls back to the counter, where a grid of thirty
- * numbers would be worse than useless.
+ * Built like `PhoneField`: a single bordered surface with hairline dividers
+ * between its cells, which is the pattern the rest of the form already uses.
+ * The range sits underneath as a fact about the room — with a counter there is
+ * nothing on screen to say a table starts at eight.
  */
 export function PartySize({
   value,
@@ -27,60 +21,53 @@ export function PartySize({
 }) {
   const min = bounds?.min ?? 1
   const max = bounds?.max ?? 30
-  const options = max - min + 1
 
-  if (!bounds || options > GRID_LIMIT) {
-    return (
-      <div className="flex items-center gap-6">
+  const step = (delta: number) => onChange(Math.min(max, Math.max(min, value + delta)))
+
+  return (
+    <div>
+      <div className="flex w-full max-w-64 items-stretch overflow-hidden rounded-sm border border-hairline bg-surface">
         <button
           type="button"
           aria-label="Fewer guests"
-          onClick={() => onChange(Math.max(min, value - 1))}
+          onClick={() => step(-1)}
           disabled={value <= min}
-          className="chip !h-13 !w-13 text-lg"
+          className={cn(
+            'flex h-14 w-14 shrink-0 items-center justify-center text-xl transition-colors duration-300',
+            value <= min ? 'cursor-not-allowed text-faint' : 'text-gold-lit hover:bg-surface-strong',
+          )}
         >
           −
         </button>
-        <span className="figure w-14 text-center text-4xl text-bone">{value}</span>
+
+        <span aria-hidden className="my-3 w-px bg-hairline" />
+
+        <span className="flex flex-1 items-baseline justify-center gap-2 py-4" aria-live="polite">
+          <span className="figure text-2xl text-bone">{value}</span>
+          <span className="label">guests</span>
+        </span>
+
+        <span aria-hidden className="my-3 w-px bg-hairline" />
+
         <button
           type="button"
           aria-label="More guests"
-          onClick={() => onChange(Math.min(max, value + 1))}
+          onClick={() => step(1)}
           disabled={value >= max}
-          className="chip !h-13 !w-13 text-lg"
+          className={cn(
+            'flex h-14 w-14 shrink-0 items-center justify-center text-xl transition-colors duration-300',
+            value >= max ? 'cursor-not-allowed text-faint' : 'text-gold-lit hover:bg-surface-strong',
+          )}
         >
           +
         </button>
       </div>
-    )
-  }
 
-  return (
-    <div
-      role="radiogroup"
-      aria-label="Number of guests"
-      className="grid grid-cols-4 gap-2 sm:grid-cols-8 sm:gap-2.5"
-    >
-      {Array.from({ length: options }, (_, i) => min + i).map(n => {
-        const selected = n === value
-        return (
-          <button
-            key={n}
-            type="button"
-            role="radio"
-            aria-checked={selected}
-            onClick={() => onChange(n)}
-            className={cn(
-              'figure flex h-13 items-center justify-center rounded-sm border text-lg transition-all duration-300 active:scale-95',
-              selected
-                ? 'border-gold bg-gold text-[#0b0906]'
-                : 'border-hairline bg-surface text-bone hover:border-gold/60',
-            )}
-          >
-            {n}
-          </button>
-        )
-      })}
+      {bounds && (
+        <p className="label mt-3">
+          {min}–{max} guests per table
+        </p>
+      )}
     </div>
   )
 }
