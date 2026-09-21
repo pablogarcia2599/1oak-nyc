@@ -16,7 +16,7 @@ function Field({
   children: React.ReactNode
 }) {
   return (
-    <label className="block">
+    <label className="block" data-invalid={error ? true : undefined}>
       <span className="label">{label}</span>
       {children}
       {error && <span className="mt-2 block text-xs text-red-400">{error}</span>}
@@ -110,29 +110,59 @@ export function GuestStep({
         )}
       </div>
 
-      <div className="mt-10 space-y-5">
-        <label className="flex cursor-pointer items-start gap-4 py-1">
+      <div className="mt-10 space-y-3">
+        {/* The house policy is the one that gates the booking, so it reads as a
+            requirement before anything is submitted — not only once it fails. */}
+        <label
+          data-invalid={errors.accepts_terms ? true : undefined}
+          className={cn(
+            'flex cursor-pointer items-start gap-4 rounded-sm border p-4 transition-colors duration-300',
+            errors.accepts_terms
+              ? 'border-red-400 bg-red-500/5'
+              : guest.accepts_terms
+                ? 'border-hairline bg-surface'
+                : 'border-gold/45 bg-surface',
+          )}
+        >
           <input
             type="checkbox"
             checked={guest.accepts_terms}
             onChange={e => onChange({ accepts_terms: e.target.checked })}
             className="check mt-0.5"
           />
-          <span className="text-[0.875rem] leading-relaxed text-mute">
-            I accept the reservation terms and the house policy, including the dress code and{' '}
-            {VENUE.agePolicy.toLowerCase()}.
+          <span className="min-w-0">
+            <span
+              className={cn(
+                'label block',
+                errors.accepts_terms ? 'text-red-400' : 'label-gold',
+              )}
+            >
+              Required
+            </span>
+            <span className="mt-1.5 block text-[0.875rem] leading-relaxed text-bone">
+              I accept the reservation terms and the house policy, including the dress code
+              and {VENUE.agePolicy.toLowerCase()}.
+            </span>
+            {errors.accepts_terms && (
+              <span className="mt-2 block text-xs text-red-400">
+                Tick this to continue.
+              </span>
+            )}
           </span>
         </label>
 
-        <label className="flex cursor-pointer items-start gap-4 py-1">
+        <label className="flex cursor-pointer items-start gap-4 rounded-sm border border-hairline-soft p-4">
           <input
             type="checkbox"
             checked={guest.marketing_consent}
             onChange={e => onChange({ marketing_consent: e.target.checked })}
             className="check mt-0.5"
           />
-          <span className="text-[0.875rem] leading-relaxed text-mute">
-            Keep me on the list for upcoming nights and guest announcements.
+          <span className="min-w-0">
+            <span className="label block">Optional</span>
+            <span className="mt-1.5 block text-[0.875rem] leading-relaxed text-mute">
+              Keep me on the list for upcoming nights and guest announcements.
+            </span>
           </span>
         </label>
       </div>

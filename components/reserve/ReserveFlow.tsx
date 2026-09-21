@@ -141,6 +141,20 @@ export function ReserveFlow({
     })
   }, [])
 
+  /** Scrolls to the first thing that is missing, and puts the cursor in it. */
+  function showFirstProblem() {
+    requestAnimationFrame(() => {
+      const target = document.querySelector<HTMLElement>('[data-invalid]')
+      if (!target) return
+      const HEADER = 110
+      window.scrollTo({
+        top: Math.max(0, target.getBoundingClientRect().top + window.scrollY - HEADER),
+        behavior: 'smooth',
+      })
+      target.querySelector('input')?.focus({ preventScroll: true })
+    })
+  }
+
   function validateGuest(): boolean {
     const errors: Record<string, string> = {}
     if (guest.full_name.trim().length < 2) errors.full_name = 'Please enter the full name.'
@@ -164,7 +178,11 @@ export function ReserveFlow({
   function confirm() {
     const { event, zone, rate, table, partySize } = selection
     if (!event || !zone || !rate) return
-    if (!validateGuest()) return
+    if (!validateGuest()) {
+      // Without this the button simply does nothing, which reads as broken.
+      showFirstProblem()
+      return
+    }
     setSubmitError(undefined)
 
     startTransition(async () => {
