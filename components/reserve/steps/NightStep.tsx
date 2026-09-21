@@ -1,6 +1,7 @@
 'use client'
 
 import type { FvEvent } from '@/types/fourvenues'
+import { PartySize } from '../PartySize'
 import { cn, doorTime, nightDate } from '@/lib/utils'
 
 export function NightStep({
@@ -68,41 +69,13 @@ export function NightStep({
       <section>
         <h2 className="heading heading-md text-bone">How many guests?</h2>
         <p className="mt-4 max-w-md text-[0.95rem] leading-relaxed text-mute">
-          {bounds ? (
-            <>
-              Tables here are booked for{' '}
-              <span className="text-gold-lit">
-                {bounds.min} to {bounds.max} guests
-              </span>
-              .
-            </>
-          ) : (
-            'Choose a night to see the tables it can take.'
-          )}
+          {bounds
+            ? 'Only the tables that can take your party are shown.'
+            : 'Choose a night to see the tables it can take.'}
         </p>
 
-        <div className="mt-8 flex items-center gap-6">
-          <button
-            type="button"
-            aria-label="Fewer guests"
-            onClick={() => onPartySize(Math.max(bounds?.min ?? 1, partySize - 1))}
-            disabled={partySize <= (bounds?.min ?? 1)}
-            className="chip !h-13 !w-13 text-lg"
-          >
-            −
-          </button>
-          <span className="figure w-14 text-center text-4xl text-bone">
-            {partySize}
-          </span>
-          <button
-            type="button"
-            aria-label="More guests"
-            onClick={() => onPartySize(Math.min(bounds?.max ?? 30, partySize + 1))}
-            disabled={partySize >= (bounds?.max ?? 30)}
-            className="chip !h-13 !w-13 text-lg"
-          >
-            +
-          </button>
+        <div className="mt-8">
+          <PartySize value={partySize} bounds={bounds} onChange={onPartySize} />
         </div>
       </section>
     </div>
