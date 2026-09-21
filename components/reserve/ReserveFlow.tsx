@@ -225,7 +225,7 @@ export function ReserveFlow({
   return (
     <div
       ref={topRef}
-      className="mx-auto max-w-7xl scroll-mt-24 px-4 pb-32 sm:px-8 lg:pb-0"
+      className="gutter mx-auto max-w-7xl scroll-mt-24 pb-36 lg:pb-0"
     >
       <Stepper steps={[...STEPS]} current={step} onJump={goTo} />
 
@@ -335,7 +335,7 @@ export function ReserveFlow({
         className="glass fixed inset-x-0 bottom-0 z-40 border-t border-hairline-soft lg:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        <div className="flex items-center gap-3 px-4 py-3">
+        <div className="gutter flex items-center gap-3 py-3.5">
           <button
             type="button"
             onClick={() => goTo(Math.max(0, step - 1))}

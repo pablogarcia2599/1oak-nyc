@@ -11,7 +11,7 @@ export function LegalPage({
   return (
     <>
       <SiteHeader />
-      <main className="mx-auto max-w-2xl px-4 pb-24 pt-32 sm:px-8 sm:pt-40">
+      <main className="gutter mx-auto max-w-2xl pb-24 pt-32 sm:pt-40">
         <p className="label label-gold">Legal</p>
         <h1 className="heading heading-lg mt-4 text-bone">{title}</h1>
         <div className="mt-12 border-t border-hairline-soft">

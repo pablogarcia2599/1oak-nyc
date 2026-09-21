@@ -18,7 +18,7 @@ export default async function ConfirmedPage({
     <>
       <SiteHeader />
 
-      <main className="flex min-h-[80svh] items-center justify-center px-6 py-28">
+      <main className="flex min-h-[80svh] items-center gutter justify-center py-28">
         <div className="w-full max-w-lg text-center">
           <Wordmark className="mx-auto h-24 sm:h-28" />
 

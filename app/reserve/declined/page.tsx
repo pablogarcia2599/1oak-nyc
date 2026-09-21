@@ -11,7 +11,7 @@ export default function DeclinedPage() {
     <>
       <SiteHeader />
 
-      <main className="flex min-h-[80svh] items-center justify-center px-6 py-28">
+      <main className="flex min-h-[80svh] items-center gutter justify-center py-28">
         <div className="w-full max-w-md text-center">
           <p className="label label-gold">Not completed</p>
           <h1 className="heading heading-lg mt-4 text-bone">The payment did not go through</h1>

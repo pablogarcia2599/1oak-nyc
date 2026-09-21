@@ -159,6 +159,23 @@
     font-weight: 400;
   }
 
+  /* The page gutter, in one place.
+     20px on a phone rather than 16: the extra 4px each side costs nothing on a
+     375px screen and stops the type sitting on the bezel. `max()` against the
+     safe-area insets keeps content clear of the notch in landscape, which a
+     plain padding does not. */
+  .gutter {
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+  }
+
+  @media (min-width: 40rem) {
+    .gutter {
+      padding-left: max(2rem, env(safe-area-inset-left));
+      padding-right: max(2rem, env(safe-area-inset-right));
+    }
+  }
+
   /* ── Materials ────────────────────────────────────────────────────────── */
 
   .material {

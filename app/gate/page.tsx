@@ -15,7 +15,7 @@ export default async function GatePage({
   const { next } = await searchParams
 
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center px-6 py-20">
+    <main className="flex min-h-svh flex-col items-center gutter justify-center py-20">
       <Wordmark className="h-24 sm:h-28" priority />
       <p className="label label-gold mt-12">Private preview</p>
       <h1 className="heading heading-md mt-3 text-center text-bone">

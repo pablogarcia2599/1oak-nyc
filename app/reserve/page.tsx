@@ -38,7 +38,7 @@ export default async function ReservePage({
         <h1 className="sr-only">Table reservations</h1>
 
         {failed ? (
-          <div className="mx-auto max-w-xl px-4 sm:px-8">
+          <div className="gutter mx-auto max-w-xl">
             <p className="material p-6 text-sm leading-relaxed text-mute">
               Our booking system is briefly unreachable. Call{' '}
               <a href={`tel:${VENUE.phone.replace(/[^\d+]/g, '')}`} className="text-gold-lit">

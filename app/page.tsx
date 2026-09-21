@@ -29,7 +29,7 @@ function Section({
 }) {
   return (
     <section id={id} className="scroll-mt-20 border-t border-hairline-soft">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-16 sm:px-8 sm:py-24 lg:grid-cols-[9rem_1fr] lg:gap-16">
+      <div className="mx-auto grid max-w-7xl gutter gap-8 py-16 sm:py-24 lg:grid-cols-[9rem_1fr] lg:gap-16">
         <p className="label lg:sticky lg:top-28 lg:self-start">
           {index} — {title}
         </p>
@@ -68,7 +68,7 @@ export default async function HomePage() {
 
       <main>
         {/* ── Hero ───────────────────────────────────────────────────────── */}
-        <section className="flex min-h-svh flex-col items-center justify-center px-4 pb-16 pt-28 sm:px-8">
+        <section className="flex min-h-svh flex-col items-center gutter justify-center pb-16 pt-28">
           {/* The mark leads. A headline big enough to compete with it would
               only shout over the one asset the brand actually owns. */}
           <Reveal>

@@ -29,7 +29,7 @@ export function SiteHeader() {
         scrolled ? 'glass border-hairline-soft' : 'border-transparent bg-ink',
       )}
     >
-      <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] items-center gap-4 px-4 sm:h-20 sm:px-8">
+      <div className="mx-auto grid h-16 max-w-7xl grid-cols-[1fr_auto_1fr] gutter items-center gap-4 sm:h-20">
         {/* Nav sits left on desktop; on mobile the mark holds the centre alone. */}
         <nav className="hidden items-center gap-8 md:flex">
           {LINKS.map(link => (
