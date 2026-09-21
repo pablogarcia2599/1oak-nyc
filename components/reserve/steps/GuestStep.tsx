@@ -158,11 +158,8 @@ export function GuestStep({
             onChange={e => onChange({ marketing_consent: e.target.checked })}
             className="check mt-0.5"
           />
-          <span className="min-w-0">
-            <span className="label block">Optional</span>
-            <span className="mt-1.5 block text-[0.875rem] leading-relaxed text-mute">
-              Keep me on the list for upcoming nights and guest announcements.
-            </span>
+          <span className="min-w-0 text-[0.875rem] leading-relaxed text-mute">
+            Keep me on the list for upcoming nights and guest announcements.
           </span>
         </label>
       </div>
