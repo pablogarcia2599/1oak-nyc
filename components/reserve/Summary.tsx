@@ -26,7 +26,7 @@ export function SummaryContent({
           ['Night', date ? `${date.weekdayLong} ${date.day} ${date.month}` : '—'],
           ['Party', `${selection.partySize} guests`],
           ['Table', selection.table ? `Table ${selection.table.name}` : '—'],
-          ['Room', rate?.name ?? '—'],
+          ['Zone', rate?.name ?? '—'],
         ].map(([label, value]) => (
           <div key={label} className="flex items-baseline justify-between gap-4">
             <dt className="label">{label}</dt>
