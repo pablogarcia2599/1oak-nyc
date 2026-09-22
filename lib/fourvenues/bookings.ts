@@ -20,6 +20,35 @@ import type {
  * Passing `quantity: 1` returns the full catalogue with every table marked
  * unavailable — which is how the home page reads the room list.
  */
+/**
+ * Contact numbers for the rates the venue handles by hand, keyed by rate id.
+ *
+ * `/bookings/availability` knows a rate is contact-only but not who to
+ * contact; `/bookings/zones` carries the number. Neither endpoint has both.
+ */
+async function whatsappNumbers(eventId: string): Promise<Map<string, string>> {
+  const numbers = new Map<string, string>()
+  try {
+    const res = await fvFetch<FvResponse<FvZone[]>>('/bookings/zones', {
+      params: { event_id: eventId },
+      next: { revalidate: 300 },
+    })
+    for (const zone of res.data ?? []) {
+      for (const table of zone.spaces ?? []) {
+        for (const rate of table.rates ?? []) {
+          if (rate.whatsapp_contact_phone_number) {
+            numbers.set(rate._id, rate.whatsapp_contact_phone_number)
+          }
+        }
+      }
+    }
+  } catch (error) {
+    // A missing number only costs the request button, never the floor.
+    console.error('[whatsappNumbers]', error)
+  }
+  return numbers
+}
+
 export async function getAvailability(eventId: string, quantity = 1): Promise<FvZone[]> {
   if (isMockMode()) {
     // Mirror the live API: `quantity` is a MINIMUM party size, so a table is
@@ -33,13 +62,27 @@ export async function getAvailability(eventId: string, quantity = 1): Promise<Fv
     })
   }
 
-  const res = await fvFetch<FvResponse<FvZone[]>>('/bookings/availability', {
-    params: { event_id: eventId, quantity },
-    cache: 'no-store',
-  })
+  const [res, numbers] = await Promise.all([
+    fvFetch<FvResponse<FvZone[]>>('/bookings/availability', {
+      params: { event_id: eventId, quantity },
+      cache: 'no-store',
+    }),
+    whatsappNumbers(eventId),
+  ])
+
   // Full zones are kept: the UI explains *why* nothing is bookable (usually the
   // party size sits under the table minimum) instead of showing an empty room.
-  return res.data ?? []
+  return (res.data ?? []).map(zone => ({
+    ...zone,
+    spaces: (zone.spaces ?? []).map(table => ({
+      ...table,
+      rates: (table.rates ?? []).map(rate =>
+        numbers.has(rate._id)
+          ? { ...rate, whatsapp_contact_phone_number: numbers.get(rate._id) }
+          : rate,
+      ),
+    })),
+  }))
 }
 
 /**

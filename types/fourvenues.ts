@@ -75,7 +75,13 @@ export interface FvTableRate {
   /** [r, g, b] — the swatch the venue gave this rate in its floor editor. */
   color?: number[]
   conditions?: string
+  /**
+   * Set on rates the venue will not sell online. The number lives on
+   * `/bookings/zones` only — `/bookings/availability` omits it — so
+   * `getAvailability` merges the two.
+   */
   whatsapp_contact_enabled?: boolean
+  whatsapp_contact_phone_number?: string
 }
 
 export interface FvTable {

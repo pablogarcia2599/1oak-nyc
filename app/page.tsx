@@ -6,6 +6,7 @@ import { Reveal } from '@/components/Reveal'
 import { EventCard } from '@/components/EventCard'
 import { getEvents } from '@/lib/fourvenues/events'
 import { getRoomCatalogue } from '@/lib/fourvenues/bookings'
+import { isOnRequest } from '@/lib/floorplan'
 import { formatMoney } from '@/lib/utils'
 import { FAQ, ROOM_BLURBS, VENUE } from '@/content/venue'
 
@@ -59,7 +60,7 @@ export default async function HomePage() {
     }
   }
 
-  const fromPrice = rooms[0]?.rate.price
+  const fromPrice = rooms.find(room => !isOnRequest(room.rate))?.rate.price
   const currency = events[0]?.currency ?? 'USD'
 
   return (
@@ -140,7 +141,9 @@ export default async function HomePage() {
                     </div>
                     <div className="flex items-baseline gap-6 sm:flex-col sm:items-end sm:gap-1.5">
                       <p className="figure text-2xl text-gold-lit">
-                        {formatMoney(room.rate.price, currency)}
+                        {isOnRequest(room.rate)
+                          ? 'On request'
+                          : formatMoney(room.rate.price, currency)}
                       </p>
                       <p className="label">
                         {room.minGuests}–{room.maxGuests} guests

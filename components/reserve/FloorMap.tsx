@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { FvTable, FvZone } from '@/types/fourvenues'
 import {
+  isOnRequest,
   MARKER_SIZE,
   PLAN_IMAGE_STYLE,
   croppedAspect,
@@ -166,7 +167,11 @@ export function FloorMap({
                 disabled={!bookable}
                 onClick={() => onSelect(table)}
                 aria-pressed={selected}
-                aria-label={`Table ${table.name}${rate ? `, ${rate.name}, ${formatMoney(rate.price, currency)}` : ''}, ${table.minimum} to ${table.capacity} guests${reason ? `, ${reason}` : ''}`}
+                aria-label={`Table ${table.name}${
+                  rate
+                    ? `, ${rate.name}, ${isOnRequest(rate) ? 'on request' : formatMoney(rate.price, currency)}`
+                    : ''
+                }, ${table.minimum} to ${table.capacity} guests${reason ? `, ${reason}` : ''}`}
                 style={{
                   left: `${left}%`,
                   top: `${top}%`,
@@ -213,7 +218,9 @@ export function FloorMap({
                     <span className="mx-1.5 text-faint">·</span>
                     {rate.name}
                     <span className="mx-1.5 text-faint">·</span>
-                    <span className="text-gold-lit">{formatMoney(rate.price, currency)}</span>
+                    <span className="text-gold-lit">
+                      {isOnRequest(rate) ? 'On request' : formatMoney(rate.price, currency)}
+                    </span>
                   </span>
                 </span>
               )}

@@ -148,6 +148,21 @@ export function rateColor(rate?: FvTableRate, alpha = 1): string | undefined {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`
 }
 
+/**
+ * Rates the venue will not sell online. They carry no price in the interface
+ * and no path to checkout — only a way to reach a host.
+ */
+export function isOnRequest(rate?: FvTableRate): boolean {
+  return Boolean(rate?.whatsapp_contact_enabled)
+}
+
+/** A wa.me link for a rate, with the request already written. */
+export function whatsappLink(rate: FvTableRate, message: string): string | undefined {
+  const digits = rate.whatsapp_contact_phone_number?.replace(/\D/g, '')
+  if (!digits) return undefined
+  return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
+}
+
 /** The rates a table can be booked on — table-level wins over zone-level. */
 export function ratesFor(table?: FvTable, zone?: FvZone): FvTableRate[] {
   return (table?.rates?.length ? table.rates : zone?.rates) ?? []

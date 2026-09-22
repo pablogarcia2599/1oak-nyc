@@ -2,6 +2,7 @@
 
 import type { Selection } from './types'
 import { depositFor } from './types'
+import { isOnRequest } from '@/lib/floorplan'
 import { priceBreakdown } from '@/lib/pricing'
 import { formatMoney, nightDate } from '@/lib/utils'
 
@@ -34,7 +35,7 @@ export function SummaryContent({
         ))}
       </dl>
 
-      {rate && (
+      {rate && !isOnRequest(rate) && (
         <div className="mt-6 border-t border-hairline pt-5">
           <div className="flex items-baseline justify-between gap-4">
             <span className="label">Minimum</span>

@@ -2,9 +2,10 @@
 
 import type { FvTable, FvTableRate, FvZone } from '@/types/fourvenues'
 import { FloorMap } from '../FloorMap'
+import { VENUE } from '@/content/venue'
 import { BreakdownLines } from '../Breakdown'
 import { priceBreakdown } from '@/lib/pricing'
-import { partyBounds, rateColor, ratesFor, roomsFrom } from '@/lib/floorplan'
+import { isOnRequest, partyBounds, rateColor, ratesFor, roomsFrom, whatsappLink } from '@/lib/floorplan'
 import { cn, formatMoney } from '@/lib/utils'
 
 export function TableStep({
@@ -20,6 +21,7 @@ export function TableStep({
   onRate,
   onPartySize,
   currency,
+  nightLabel,
 }: {
   zones: FvZone[]
   loading: boolean
@@ -33,6 +35,8 @@ export function TableStep({
   onRate: (rate: FvTableRate) => void
   onPartySize: (n: number) => void
   currency: string
+  /** Used to write the request a guest sends about a contact-only table. */
+  nightLabel: string
 }) {
   const heading = <h2 className="heading heading-lg text-bone">Pick your table</h2>
 
@@ -154,50 +158,78 @@ export function TableStep({
             </button>
           </div>
 
-          {(() => {
-            const extraGuests = Math.max(0, partySize - rate.included_persons)
-            const supplements = extraGuests * (rate.supplement_price ?? 0)
-            const price = priceBreakdown(rate.price, supplements)
+          {isOnRequest(rate) ? (
+            <div className="border-t border-hairline-soft p-5 sm:p-6">
+              <p className="text-[0.95rem] leading-relaxed text-mute">
+                {rate.name} is arranged with a host rather than booked online.
+              </p>
+              {(() => {
+                const link = whatsappLink(
+                  rate,
+                  `Hi 1 OAK — I would like to request ${rate.name}, table ${table.name}, for ${nightLabel}, ${partySize} guests.`,
+                )
+                return link ? (
+                  <a
+                    href={link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-primary mt-5 w-full sm:w-auto"
+                  >
+                    Request on WhatsApp
+                  </a>
+                ) : (
+                  <a href={`mailto:${VENUE.email}`} className="btn btn-primary mt-5 w-full sm:w-auto">
+                    Request by email
+                  </a>
+                )
+              })()}
+            </div>
+          ) : (
+            (() => {
+              const extraGuests = Math.max(0, partySize - rate.included_persons)
+              const supplements = extraGuests * (rate.supplement_price ?? 0)
+              const price = priceBreakdown(rate.price, supplements)
 
-            return (
-              <details className="group">
-                <summary className="grid cursor-pointer list-none grid-cols-2 gap-px bg-hairline-soft">
-                  <div className="bg-ink p-5 sm:p-6">
-                    <span className="label block">Minimum spend</span>
-                    <span className="figure mt-2 block text-2xl text-bone">
-                      {formatMoney(rate.price, currency)}
-                      {/* Charges and tax sit on top of it, so the figure alone
-                          would read as the whole cost. */}
-                      <span className="text-mute"> +</span>
-                    </span>
-                  </div>
-                  <div className="bg-ink p-5 sm:p-6">
-                    <span className="label flex items-center justify-between gap-3">
-                      Payable now
-                      <span className="text-gold transition-transform duration-300 group-open:rotate-45">
-                        +
+              return (
+                <details className="group">
+                  <summary className="grid cursor-pointer list-none grid-cols-2 gap-px bg-hairline-soft">
+                    <div className="bg-ink p-5 sm:p-6">
+                      <span className="label block">Minimum spend</span>
+                      <span className="figure mt-2 block text-2xl text-bone">
+                        {formatMoney(rate.price, currency)}
+                        {/* Charges and tax sit on top of it, so the figure alone
+                            would read as the whole cost. */}
+                        <span className="text-mute"> +</span>
                       </span>
-                    </span>
-                    <span className="figure mt-2 block text-2xl text-gold-lit">
-                      {formatMoney(price.total, currency, { cents: true })}
-                    </span>
-                  </div>
-                </summary>
+                    </div>
+                    <div className="bg-ink p-5 sm:p-6">
+                      <span className="label flex items-center justify-between gap-3">
+                        Payable now
+                        <span className="text-gold transition-transform duration-300 group-open:rotate-45">
+                          +
+                        </span>
+                      </span>
+                      <span className="figure mt-2 block text-2xl text-gold-lit">
+                        {formatMoney(price.total, currency, { cents: true })}
+                      </span>
+                    </div>
+                  </summary>
 
-                <div className="border-t border-hairline-soft p-5 sm:p-6">
-                  <BreakdownLines
-                    price={price}
-                    currency={currency}
-                    note={
-                      extraGuests > 0 && supplements > 0
-                        ? `Minimum includes ${extraGuests} additional ${extraGuests === 1 ? 'guest' : 'guests'}`
-                        : undefined
-                    }
-                  />
-                </div>
-              </details>
-            )
-          })()}
+                  <div className="border-t border-hairline-soft p-5 sm:p-6">
+                    <BreakdownLines
+                      price={price}
+                      currency={currency}
+                      note={
+                        extraGuests > 0 && supplements > 0
+                          ? `Minimum includes ${extraGuests} additional ${extraGuests === 1 ? 'guest' : 'guests'}`
+                          : undefined
+                      }
+                    />
+                  </div>
+                </details>
+              )
+            })()
+          )}
 
           {rate.content && (
             <p className="border-t border-hairline-soft p-5 text-[0.95rem] leading-relaxed text-mute sm:p-6">
@@ -245,7 +277,9 @@ export function TableStep({
                     </span>
                     <span className="shrink-0 text-right">
                       <span className="block text-[0.95rem] tabular-nums text-gold-lit">
-                        {formatMoney(room.rate.price, currency)}
+                        {isOnRequest(room.rate)
+                          ? 'On request'
+                          : formatMoney(room.rate.price, currency)}
                       </span>
                       <span className="label mt-1 block">
                         {room.minGuests}–{room.maxGuests} guests

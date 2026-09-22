@@ -10,9 +10,9 @@ import { GuestStep } from './steps/GuestStep'
 import { PricePanel } from './PricePanel'
 import { SummaryContent } from './Summary'
 import { EMPTY_GUEST, STEPS, depositFor, type GuestDetails, type Selection } from './types'
-import { partyBounds, ratesFor } from '@/lib/floorplan'
+import { isOnRequest, partyBounds, ratesFor } from '@/lib/floorplan'
 import { priceBreakdown } from '@/lib/pricing'
-import { formatMoney } from '@/lib/utils'
+import { formatMoney, nightDate } from '@/lib/utils'
 
 export function ReserveFlow({
   events,
@@ -167,8 +167,18 @@ export function ReserveFlow({
     return Object.keys(errors).length === 0
   }
 
+  // A contact-only rate has no checkout to advance to.
   const canAdvance =
-    step === 0 ? Boolean(selection.event) : Boolean(selection.zone && selection.rate)
+    step === 0
+      ? Boolean(selection.event)
+      : Boolean(selection.zone && selection.rate) && !isOnRequest(selection.rate)
+
+  const nightLabel = selection.event
+    ? (() => {
+        const d = nightDate(selection.event)
+        return `${d.weekdayLong} ${d.day} ${d.monthLong}`
+      })()
+    : 'an upcoming night'
 
   function next() {
     goTo(Math.min(STEPS.length - 1, step + 1))
@@ -268,6 +278,7 @@ export function ReserveFlow({
               }
               onRate={(rate: FvTableRate) => setSelection(prev => ({ ...prev, rate }))}
               onPartySize={(n: number) => setSelection(prev => ({ ...prev, partySize: n }))}
+              nightLabel={nightLabel}
             />
           )}
 
@@ -354,9 +365,11 @@ export function ReserveFlow({
             </p>
             {selection.rate && (
               <p className="truncate text-sm text-gold-lit">
-                {formatMoney(priceBreakdown(selection.rate.price).total, currency, {
-                  cents: true,
-                })}
+                {isOnRequest(selection.rate)
+                  ? 'On request'
+                  : formatMoney(priceBreakdown(selection.rate.price).total, currency, {
+                      cents: true,
+                    })}
               </p>
             )}
           </div>
