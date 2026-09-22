@@ -2,7 +2,8 @@
 
 import type { FvTable, FvTableRate, FvZone } from '@/types/fourvenues'
 import { FloorMap } from '../FloorMap'
-import { depositFor } from '../types'
+import { BreakdownLines } from '../Breakdown'
+import { priceBreakdown } from '@/lib/pricing'
 import { partyBounds, rateColor, ratesFor, roomsFrom } from '@/lib/floorplan'
 import { cn, formatMoney } from '@/lib/utils'
 
@@ -153,22 +154,50 @@ export function TableStep({
             </button>
           </div>
 
-          <dl className="grid grid-cols-2 gap-px bg-hairline-soft">
-            <div className="bg-ink p-5 sm:p-6">
-              <dt className="label">Minimum spend</dt>
-              <dd className="figure mt-2 text-2xl text-bone">
-                {formatMoney(rate.price, currency)}
-              </dd>
-            </div>
-            <div className="bg-ink p-5 sm:p-6">
-              <dt className="label">
-                {depositFor(rate) >= rate.price ? 'Payable now' : 'Deposit now'}
-              </dt>
-              <dd className="figure mt-2 text-2xl text-gold-lit">
-                {formatMoney(depositFor(rate) || rate.price, currency)}
-              </dd>
-            </div>
-          </dl>
+          {(() => {
+            const extraGuests = Math.max(0, partySize - rate.included_persons)
+            const supplements = extraGuests * (rate.supplement_price ?? 0)
+            const price = priceBreakdown(rate.price, supplements)
+
+            return (
+              <details className="group">
+                <summary className="grid cursor-pointer list-none grid-cols-2 gap-px bg-hairline-soft">
+                  <div className="bg-ink p-5 sm:p-6">
+                    <span className="label block">Minimum spend</span>
+                    <span className="figure mt-2 block text-2xl text-bone">
+                      {formatMoney(rate.price, currency)}
+                      {/* Charges and tax sit on top of it, so the figure alone
+                          would read as the whole cost. */}
+                      <span className="text-mute"> +</span>
+                    </span>
+                  </div>
+                  <div className="bg-ink p-5 sm:p-6">
+                    <span className="label flex items-center justify-between gap-3">
+                      Payable now
+                      <span className="text-gold transition-transform duration-300 group-open:rotate-45">
+                        +
+                      </span>
+                    </span>
+                    <span className="figure mt-2 block text-2xl text-gold-lit">
+                      {formatMoney(price.total, currency, { cents: true })}
+                    </span>
+                  </div>
+                </summary>
+
+                <div className="border-t border-hairline-soft p-5 sm:p-6">
+                  <BreakdownLines
+                    price={price}
+                    currency={currency}
+                    note={
+                      extraGuests > 0 && supplements > 0
+                        ? `Minimum includes ${extraGuests} additional ${extraGuests === 1 ? 'guest' : 'guests'}`
+                        : undefined
+                    }
+                  />
+                </div>
+              </details>
+            )
+          })()}
 
           {rate.content && (
             <p className="border-t border-hairline-soft p-5 text-[0.95rem] leading-relaxed text-mute sm:p-6">

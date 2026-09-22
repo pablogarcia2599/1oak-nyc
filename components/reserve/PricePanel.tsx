@@ -2,6 +2,7 @@
 
 import type { Selection } from './types'
 import { depositFor } from './types'
+import { BreakdownLines } from './Breakdown'
 import { priceBreakdown } from '@/lib/pricing'
 import { doorTime, formatMoney, nightDate } from '@/lib/utils'
 
@@ -55,29 +56,17 @@ export function PricePanel({
             </span>
           </summary>
 
-          <dl className="px-6 pb-6">
-            {price.lines.map(line => (
-              <div
-                key={line.label}
-                className="flex items-baseline justify-between gap-6 py-2.5"
-              >
-                <dt className="text-[0.95rem] text-mute">
-                  {line.label}
-                  {line.note && <span className="text-faint"> · {line.note}</span>}
-                </dt>
-                <dd className="figure shrink-0 text-[0.95rem] text-bone">
-                  {formatMoney(line.amount, currency, { cents: true })}
-                </dd>
-              </div>
-            ))}
-
-            {extraGuests > 0 && supplements > 0 && (
-              <p className="label pt-2">
-                Minimum includes {extraGuests} additional{' '}
-                {extraGuests === 1 ? 'guest' : 'guests'}
-              </p>
-            )}
-          </dl>
+          <div className="px-6 pb-6">
+            <BreakdownLines
+              price={price}
+              currency={currency}
+              note={
+                extraGuests > 0 && supplements > 0
+                  ? `Minimum includes ${extraGuests} additional ${extraGuests === 1 ? 'guest' : 'guests'}`
+                  : undefined
+              }
+            />
+          </div>
         </details>
 
         <p className="border-t border-hairline-soft p-6 text-xs leading-relaxed text-faint">
