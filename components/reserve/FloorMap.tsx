@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { FvTable, FvZone } from '@/types/fourvenues'
 import {
+  MARKER_SIZE,
   PLAN_IMAGE_STYLE,
   croppedAspect,
   planPosition,
@@ -75,7 +76,11 @@ export function FloorMap({
       let best: { table: FvTable; distance: number } | undefined
       for (const table of tables) {
         if (!table.available || table.blocked) continue
-        const at = plan ? planPosition(table) : spreadPosition(table, tables)
+        // Must be the same positions the markers are drawn at, or a tap
+        // resolves to a different table than the one under the finger.
+        const at = plan
+          ? planPosition(table, zone.normalized_name)
+          : spreadPosition(table, tables)
         const dx = (at.left / 100) * box.width - x
         const dy = (at.top / 100) * box.height - y
         const distance = Math.hypot(dx, dy)
@@ -86,7 +91,7 @@ export function FloorMap({
 
       if (best) onSelect(best.table)
     },
-    [onSelect, plan, tables],
+    [onSelect, plan, tables, zone.normalized_name],
   )
 
   if (tables.length === 0) {
@@ -138,7 +143,9 @@ export function FloorMap({
         )}
 
         {tables.map(table => {
-          const { left, top } = plan ? planPosition(table) : spreadPosition(table, tables)
+          const { left, top } = plan
+            ? planPosition(table, zone.normalized_name)
+            : spreadPosition(table, tables)
           const rate = ratesFor(table, zone)[0]
           const selected = table._id === selectedId
           const bookable = table.available && !table.blocked
@@ -163,6 +170,7 @@ export function FloorMap({
                 style={{
                   left: `${left}%`,
                   top: `${top}%`,
+                  ...MARKER_SIZE,
                   ...(selected
                     ? { backgroundColor: rateColor(rate, 1) ?? 'var(--color-gold)' }
                     : bookable
@@ -171,7 +179,8 @@ export function FloorMap({
                 }}
                 className={cn(
                   'absolute -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-300',
-                  'h-[4.5%] w-[5.6%] min-h-3.5 min-w-3.5 sm:min-h-7 sm:min-w-7',
+                  // Sized to the circle the chart draws, so the two coincide.
+                  'min-h-3.5 min-w-3.5 sm:min-h-7 sm:min-w-7',
                   // On a phone the plan handles the tap, so the dots are
                   // visuals; a cursor is accurate enough to keep them live.
                   'pointer-events-none sm:pointer-events-auto',

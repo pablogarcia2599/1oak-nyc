@@ -58,8 +58,61 @@ export const PLAN_IMAGE_STYLE = {
   top: `-${(PLAN_CROP.top / PLAN_VISIBLE) * 100}%`,
 } as const
 
-/** Position within the *cropped* viewport, which is what the map renders. */
-export function planPosition(table: FvTable) {
+/**
+ * Exact marker positions, read off the venue's own chart.
+ *
+ * The calibration below is the best a linear fit can do, and it is not good
+ * enough: the venue stores coordinates as rounded integers, so T1 sits a whole
+ * unit — 57px on the source image, 3.5% of its width — from where the artwork
+ * draws it. No scale and offset can absorb that.
+ *
+ * These are therefore measured rather than computed. A matched filter for a
+ * 32–40px ring was correlated over the chart; the 23 strongest responses
+ * (15.6–21.3, with the next at 11.7) are the 23 table circles, and they were
+ * paired with the API's tables by column, whose shape — 4, 4, 6, 9 — matches
+ * on both sides and admits only one assignment. Values are percentages of the
+ * cropped plan, so they move with `PLAN_CROP`.
+ *
+ * Keyed by zone `normalized_name`, then table `name`. Anything not listed
+ * falls back to the calibration, so a new table appears roughly right rather
+ * than not at all. Re-measure if the venue replaces its chart.
+ */
+export const PLAN_OVERRIDES: Record<string, Record<string, [number, number]>> = {
+  'vip-tables': {
+    '1': [27.68, 14.64],
+    '2': [27.62, 18.39],
+    '3': [27.62, 22.3],
+    '4': [27.56, 26.15],
+    '5': [16.16, 37.86],
+    '6': [16.16, 42.26],
+    '7': [16.16, 54.42],
+    '8': [16.22, 58.62],
+    '9': [53.78, 12.07],
+    '10': [82.26, 12.07],
+    '11': [53.6, 25.11],
+    '12': [53.54, 30.2],
+    '13': [82.5, 25.26],
+    '14': [82.44, 30.11],
+    '15': [82.93, 42.95],
+    '16': [83.05, 55.16],
+    '17': [82.93, 66.97],
+    '18': [82.93, 77.69],
+    '19': [82.93, 81.55],
+    '20': [54.88, 77.65],
+    '21': [54.82, 81.55],
+    '22': [55.18, 90.3],
+    '23': [82.74, 90.3],
+  },
+}
+
+/**
+ * Position within the *cropped* viewport, which is what the map renders.
+ * A measured position wins; the calibration is the fallback.
+ */
+export function planPosition(table: FvTable, zoneKey?: string) {
+  const measured = zoneKey ? PLAN_OVERRIDES[zoneKey]?.[table.name] : undefined
+  if (measured) return { left: measured[0], top: measured[1] }
+
   const { scaleX, offsetX, scaleY, offsetY } = PLAN_CALIBRATION
   const topInImage = table.position.y * scaleY + offsetY
   return {
@@ -67,6 +120,12 @@ export function planPosition(table: FvTable) {
     top: ((topInImage - PLAN_CROP.top) / PLAN_VISIBLE) * 100,
   }
 }
+
+/** The chart draws its circles 80px across on a 1640x2520 plan. */
+export const MARKER_SIZE = {
+  width: `${(80 / 1640) * 100}%`,
+  height: `${((80 / 2520) * 100) / (PLAN_VISIBLE / 100)}%`,
+} as const
 
 /** Falls back to spreading tables across the box when there is no plan image. */
 export function spreadPosition(table: FvTable, all: FvTable[]) {
