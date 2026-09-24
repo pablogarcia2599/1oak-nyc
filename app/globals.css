@@ -44,7 +44,9 @@
   }
 
   body {
-    background: var(--color-ink);
+    /* No background here. The page colour lives on <html>, which paints the
+       canvas; a background on <body> would occlude the ambience layer, since
+       a negative z-index puts a child behind its own parent's background. */
     color: var(--color-bone);
     font-family: var(--font-sans);
     font-weight: 300;
@@ -342,4 +344,21 @@
 @keyframes pop {
   from { opacity: 0; transform: scale(0.94); }
   to { opacity: 1; transform: none; }
+}
+
+/* The ambience drifts. Transform only, so nothing leaves the compositor, and
+   three periods that do not divide into each other, so the loop is not one. */
+@keyframes drift-a {
+  0%, 100% { transform: translate3d(-6%, -4%, 0) scale(0.92); }
+  50% { transform: translate3d(18%, 14%, 0) scale(1.22); }
+}
+
+@keyframes drift-b {
+  0%, 100% { transform: translate3d(6%, 4%, 0) scale(1.18); }
+  50% { transform: translate3d(-20%, -16%, 0) scale(0.88); }
+}
+
+@keyframes drift-c {
+  0%, 100% { transform: translate3d(8%, -8%, 0) scale(0.9); }
+  50% { transform: translate3d(-14%, 20%, 0) scale(1.24); }
 }

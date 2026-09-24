@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Archivo } from 'next/font/google'
 import './globals.css'
+import { Ambience } from '@/components/Ambience'
 import { VENUE } from '@/content/venue'
 
 /**
@@ -46,7 +47,10 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={archivo.variable}>
-      <body className="min-h-screen antialiased">{children}</body>
+      <body className="min-h-screen antialiased">
+        <Ambience />
+        {children}
+      </body>
     </html>
   )
 }
