@@ -4,7 +4,6 @@ import { VENUE } from '@/content/venue'
 
 const NAV = [
   { href: '/#nights', label: 'Nights' },
-  { href: '/#rooms', label: 'The room' },
   { href: '/#visit', label: 'Visit' },
   { href: '/reserve', label: 'Reservations' },
 ]

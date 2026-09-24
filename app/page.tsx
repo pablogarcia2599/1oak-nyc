@@ -7,8 +7,7 @@ import { EventCard } from '@/components/EventCard'
 import { getEvents } from '@/lib/fourvenues/events'
 import { getRoomCatalogue } from '@/lib/fourvenues/bookings'
 import { isOnRequest } from '@/lib/floorplan'
-import { formatMoney } from '@/lib/utils'
-import { FAQ, ROOM_BLURBS, VENUE } from '@/content/venue'
+import { FAQ, VENUE } from '@/content/venue'
 
 export const revalidate = 60
 
@@ -49,8 +48,8 @@ export default async function HomePage() {
     eventsError = true
   }
 
-  // The room list is the venue's own rate card, so it never drifts from what
-  // the reservation flow will actually sell.
+  // Only for the "tables from" line on each night: the cheapest rate the
+  // venue will actually sell online.
   let rooms: Awaited<ReturnType<typeof getRoomCatalogue>> = []
   if (events[0]) {
     try {
@@ -61,7 +60,6 @@ export default async function HomePage() {
   }
 
   const fromPrice = rooms.find(room => !isOnRequest(room.rate))?.rate.price
-  const currency = events[0]?.currency ?? 'USD'
 
   return (
     <>
@@ -122,53 +120,8 @@ export default async function HomePage() {
           </div>
         </Section>
 
-        {/* ── The room ───────────────────────────────────────────────────── */}
-        <Section id="rooms" index="02" title="The room">
-          <h2 className="heading heading-lg text-bone">Where you sit</h2>
-          <p className="prose-lede mt-5 max-w-lg">
-            Twenty-three tables across one floor. Each carries a minimum spend,
-            redeemable in bottle service on the night.
-          </p>
-
-          {rooms.length > 0 ? (
-            <ul className="mt-10">
-              {rooms.map((room, i) => (
-                <Reveal key={room.rate._id} delay={i * 50} as="li">
-                  <div className="grid gap-4 border-b border-hairline-soft py-6 sm:grid-cols-[1fr_auto] sm:items-start sm:gap-12">
-                    <div>
-                      <h3 className="heading heading-md text-bone">{room.rate.name}</h3>
-                      <p className="mt-2.5 max-w-xl text-[0.95rem] leading-relaxed text-mute">
-                        {ROOM_BLURBS[room.rate.name] ??
-                          `${room.tableCount} ${room.tableCount === 1 ? 'table' : 'tables'} on the main floor.`}
-                      </p>
-                    </div>
-                    <div className="flex items-baseline gap-6 sm:flex-col sm:items-end sm:gap-1.5">
-                      <p className="figure text-2xl text-gold-lit">
-                        {isOnRequest(room.rate)
-                          ? 'On request'
-                          : formatMoney(room.rate.price, currency)}
-                      </p>
-                      <p className="label">
-                        {room.minGuests}–{room.maxGuests} guests
-                      </p>
-                    </div>
-                  </div>
-                </Reveal>
-              ))}
-            </ul>
-          ) : (
-            <p className="material mt-10 p-6 text-sm text-mute">
-              Open the reservation flow to see every table on sale.
-            </p>
-          )}
-
-          <Link href="/reserve" className="btn btn-primary mt-10 w-full sm:w-auto">
-            Choose your table
-          </Link>
-        </Section>
-
         {/* ── Visit ──────────────────────────────────────────────────────── */}
-        <Section id="visit" index="03" title="Visit">
+        <Section id="visit" index="02" title="Visit">
           <div className="grid gap-14 lg:grid-cols-2 lg:gap-16">
             <div>
               <h2 className="heading heading-lg text-bone">453 West 17th</h2>
