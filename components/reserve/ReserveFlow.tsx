@@ -347,14 +347,24 @@ export function ReserveFlow({
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
         <div className="gutter flex items-center gap-3 py-3.5">
+          {/* A drawn chevron rather than an arrow glyph, and no chrome around
+              it: the bar already has one emphasis, and it is the gold button. */}
           <button
             type="button"
             onClick={() => goTo(Math.max(0, step - 1))}
             disabled={step === 0 || pending}
             aria-label="Back"
-            className="btn btn-quiet !min-h-12 !w-12 !px-0 disabled:invisible"
+            className="-ml-3 flex h-12 w-12 shrink-0 items-center justify-center text-mute transition-colors duration-200 hover:text-bone active:text-bone disabled:invisible"
           >
-            ←
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
+              <path
+                d="M12 4.5 6.5 10l5.5 5.5"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
           </button>
 
           <div className="min-w-0 flex-1">
