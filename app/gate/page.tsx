@@ -17,11 +17,10 @@ export default async function GatePage({
   return (
     <main className="flex min-h-svh flex-col items-center gutter justify-center py-20">
       <Wordmark className="scale-75 sm:scale-90" />
-      <p className="label label-gold mt-12">Private preview</p>
-      <h1 className="heading heading-md mt-3 text-center text-bone">
-        This page is not open yet
-      </h1>
-      <p className="mt-4 max-w-xs text-center text-[0.95rem] leading-relaxed text-mute">
+      {/* The page needs a heading for structure, but not one on screen: the
+          mark and a single instruction say everything there is to say. */}
+      <h1 className="sr-only">Private preview</h1>
+      <p className="mt-12 max-w-xs text-center text-[0.95rem] leading-relaxed text-mute">
         Enter the access password to continue.
       </p>
 
