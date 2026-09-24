@@ -20,7 +20,7 @@ export default async function ConfirmedPage({
 
       <main className="flex min-h-[80svh] items-center gutter justify-center py-28">
         <div className="w-full max-w-lg text-center">
-          <Wordmark className="mx-auto h-24 sm:h-28" />
+          <Wordmark className="scale-75 sm:scale-90" />
 
           <p className="label label-gold mt-12">Confirmed</p>
           <h1 className="heading heading-lg mt-4 text-bone">The table is yours</h1>

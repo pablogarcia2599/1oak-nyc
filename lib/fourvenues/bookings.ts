@@ -14,7 +14,7 @@ import type {
  *
  * `quantity` is the party size, and Fourvenues treats it as a MINIMUM as well
  * as a maximum: a table is returned `available: false` when the party is under
- * its `minimum` or over its `capacity`. At 1 OAK every table is min 8 / max 15,
+ * its `minimum` or over its `capacity`. Here every table is min 8 / max 15,
  * so a party of 6 legitimately sees nothing.
  *
  * Passing `quantity: 1` returns the full catalogue with every table marked

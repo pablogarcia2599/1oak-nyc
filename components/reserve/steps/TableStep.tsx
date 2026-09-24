@@ -166,7 +166,7 @@ export function TableStep({
               {(() => {
                 const link = whatsappLink(
                   rate,
-                  `Hi 1 OAK — I would like to request ${rate.name}, table ${table.name}, for ${nightLabel}, ${partySize} guests.`,
+                  `Hi ${VENUE.name} — I would like to request ${rate.name}, table ${table.name}, for ${nightLabel}, ${partySize} guests.`,
                 )
                 return link ? (
                   <a

@@ -18,21 +18,20 @@ const archivo = Archivo({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://reservations.1oaknyc.com'),
+  metadataBase: new URL('https://1oak-nyc.vercel.app'),
   title: {
-    default: `${VENUE.name} ${VENUE.city} · Table Reservations`,
-    template: `%s · ${VENUE.name} ${VENUE.city}`,
+    default: `${VENUE.name} · Table Reservations`,
+    template: `%s · ${VENUE.shortName}`,
   },
   description:
-    'Reserve a table at 1 OAK New York. Main floor, booth side, mezzanine and The Fireplace — bottle service and priority entry in Chelsea.',
+    'Reserve a table at 453 W 17th Street, New York. Bottle service and priority entry in Chelsea.',
   openGraph: {
-    title: `${VENUE.name} ${VENUE.city}`,
-    description: 'One of a Kind. Table reservations and bottle service.',
+    title: `${VENUE.name}, ${VENUE.city}`,
+    description: 'Table reservations and bottle service in Chelsea.',
     type: 'website',
     locale: 'en_US',
   },
   robots: { index: true, follow: true },
-  icons: { icon: '/icon.png', apple: '/icon.png' },
 }
 
 export const viewport: Viewport = {

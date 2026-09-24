@@ -5,9 +5,9 @@ import type { FvEvent, FvTable, FvTableRate, FvZone } from '@/types/fourvenues'
 // reservation flow is demo-able before the venue's API key is wired in.
 
 const LOCATION = {
-  location_id: 'loc_1oak_nyc',
-  organization_id: 'org_1oak_nyc',
-  name: '1 OAK New York',
+  location_id: 'loc_453w17th',
+  organization_id: 'org_453w17th',
+  name: '453 W 17th Street',
   address: '453 W 17th St',
   city: 'New York',
   country: 'US',

@@ -8,8 +8,8 @@ import { cn } from '@/lib/utils'
  * sitting in it as placeholder text.
  *
  * The room is in New York so the code defaults to +1 and the number formats as
- * (555) 000-0000 while it is typed — but 1 OAK draws an international crowd,
- * so the code is a choice, and a number outside +1 is left exactly as entered.
+ * (555) 000-0000 while it is typed — but the room draws an international
+ * crowd, so the code is a choice, and a number outside +1 is left as entered.
  */
 const DIAL_CODES = [
   { code: '+1', label: 'United States · Canada' },

@@ -70,14 +70,17 @@ export default async function HomePage() {
       <main>
         {/* ── Hero ───────────────────────────────────────────────────────── */}
         <section className="flex min-h-svh flex-col items-center gutter justify-center pb-16 pt-28">
-          {/* The mark leads. A headline big enough to compete with it would
-              only shout over the one asset the brand actually owns. */}
+          {/* The address is the mark, so it is the headline too. */}
           <Reveal>
-            <Wordmark className="h-40 sm:h-52 lg:h-60" priority />
+            <h1>
+              <Wordmark />
+            </h1>
           </Reveal>
 
           <Reveal delay={160}>
-            <h1 className="wordmark-echo mt-8 text-center sm:mt-10">{VENUE.city}</h1>
+            <p className="label mt-8 sm:mt-10">
+              {VENUE.neighborhood} · {VENUE.city}
+            </p>
           </Reveal>
 
           <Reveal delay={300} className="mt-14 w-full max-w-xs sm:mt-16">

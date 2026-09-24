@@ -1,8 +1,9 @@
-# 1 OAK New York — reservations microsite
+# 453 W 17th Street — reservations microsite
 
-A bespoke FV Site for 1 OAK New York: an editorial front page and a four-step
-table-reservation flow wired straight into the Fourvenues **Channel Manager
-API**. The API key stays on the server; the browser only ever talks to this app.
+A bespoke FV Site for 453 W 17th Street, New York: an editorial front page and
+a three-step table-reservation flow wired straight into the Fourvenues
+**Channel Manager API**. The API key stays on the server; the browser only ever
+talks to this app.
 
 ## Running it
 
@@ -122,19 +123,26 @@ moments — on modern app materials. No gradients, no glow, no CSS textures.
 The whole vocabulary is `.heading`, `.label`, `.material`, `.glass`, `.btn`,
 `.chip`, `.field` and `.grid-hairline` in `app/globals.css`.
 
-### Brand assets
+### The mark
 
-The mark in `public/logo.png` is the venue's own, pulled from its Fourvenues
-channel (`GET /auth` → `channel.logo_url`) rather than recreated. It ships as a
-JPEG on a flat black field, so it was keyed to alpha by luminance and trimmed
-to its bounds; `public/icon.png` is the same mark at 128px for the tab.
+There is no logo. The venue dropped its previous name and artwork, so the
+address is the name, set in type: `453` at mark scale in Archivo, with
+`W 17th Street` beneath it in the gold letterspaced line the old lockup used
+for its city. Two variants live in `components/Wordmark.tsx` — stacked for a
+page, inline for a bar — and `app/icon.svg` carries the number alone.
 
-To refresh it after a rebrand, re-download `channel.logo_url` at `w=1200` and
-re-run that key-and-trim step.
+Nothing is loaded from an image, so there is no asset to keep in sync.
 
-Event artwork is **not** used: every event in this account points `image_url`
-at the same channel logo, so the calendar is typographic until the venue
-uploads real flyers.
+The seating chart the API serves still has the old shield in its header, but
+`PLAN_CROP` hides everything above 16.5% of its height and the artwork starts
+at 17.8%, so none of it reaches the page. Verified, not assumed — but worth
+re-checking if the venue re-exports the chart.
+
+### Still to confirm with the venue
+
+`content/venue.ts` carries a placeholder phone and email (`453w17th.com`) and
+an empty Instagram, which the footer hides rather than pointing at the old
+account. These need the venue's real details before launch.
 
 ## The seating plan
 
@@ -172,3 +180,6 @@ Designed for the phone first, since that is where a table gets booked.
 
 - `content/venue.ts` holds the address, phone, email, hours and policies —
   confirm each one with the venue.
+- The deployment still answers on `1oak-nyc.vercel.app`, named before the
+  rebrand. Renaming the Vercel project changes that URL and breaks the link
+  already shared.

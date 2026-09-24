@@ -16,7 +16,7 @@ export default async function GatePage({
 
   return (
     <main className="flex min-h-svh flex-col items-center gutter justify-center py-20">
-      <Wordmark className="h-24 sm:h-28" priority />
+      <Wordmark className="scale-75 sm:scale-90" />
       <p className="label label-gold mt-12">Private preview</p>
       <h1 className="heading heading-md mt-3 text-center text-bone">
         This page is not open yet

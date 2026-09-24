@@ -6,7 +6,7 @@ import type { FvTable, FvTableRate, FvZone } from '@/types/fourvenues'
  * the plan's HEIGHT, so on a portrait plan it has to be stretched by the aspect
  * ratio before it can be used as a `left` percentage.
  *
- * These constants were fitted against 1 OAK's own seating chart (1640×2520) by
+ * These constants were fitted against the venue's own seating chart (1640×2520) by
  * overlaying markers on the circles the chart already draws. They hold to
  * within ~1% of the plan's width, and that is the floor: the venue stores the
  * coordinates as rounded integers (T1–T4 sit at y 25/29/32/35 for four evenly
@@ -170,7 +170,7 @@ export function ratesFor(table?: FvTable, zone?: FvZone): FvTableRate[] {
 
 /**
  * The venue's room catalogue, derived from the rates attached to its tables.
- * Venues like 1 OAK model each part of the room (LOUNGE, DJ BOOTH, BACK…) as a
+ * This venue models each part of the room (LOUNGE, DJ BOOTH, BACK…) as a
  * rate rather than a zone, so this is what a guest actually chooses between.
  */
 export interface Room {

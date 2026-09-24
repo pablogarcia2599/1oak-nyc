@@ -2,17 +2,21 @@
 // can hand this file to a copywriter without touching the reservation flow.
 
 export const VENUE = {
-  name: '1 OAK',
+  /** The address is the name. There is no other mark. */
+  name: '453 W 17th Street',
+  /** Used wherever the name has to fit a bar or a tab. */
+  shortName: '453 W 17th',
   city: 'New York',
-  tagline: 'One of a Kind',
   address: '453 W 17th Street, New York, NY 10011',
   neighborhood: 'Chelsea',
+  // TODO: confirm with the venue — these are placeholders, not their numbers.
   phone: '+1 (212) 691-1111',
-  email: 'reservations@1oaknyc.com',
+  email: 'reservations@453w17th.com',
   hours: 'Thursday – Saturday · 11PM – 4AM',
   agePolicy: '21+ with valid government-issued photo ID',
   dressCode: 'Upscale. No athletic wear, no hats, no exceptions at the door.',
-  instagram: 'https://instagram.com/1oak',
+  /** Empty until the venue names an account; the footer hides the link. */
+  instagram: '',
   mapsUrl: 'https://maps.google.com/?q=453+W+17th+St+New+York',
 } as const
 

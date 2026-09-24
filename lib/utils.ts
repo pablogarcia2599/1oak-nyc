@@ -34,7 +34,7 @@ export function eventDateParts(isoDate: string, timezone = 'America/New_York') {
 /**
  * The date a night is *called*, which is not the date it starts.
  *
- * 1 OAK's Saturdays open at midnight, so `start_date` lands on the Sunday.
+ * Saturdays here open at midnight, so `start_date` lands on the Sunday.
  * Fourvenues carries the evening's own date in `display_date` — that is the
  * one the venue, the flyer and the guest all mean by "Saturday".
  */

@@ -8,7 +8,7 @@ import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'Table reservations',
   description:
-    'Reserve a table at 1 OAK New York — main floor, booth side, mezzanine and The Fireplace.',
+    `Reserve a table at ${VENUE.name}, ${VENUE.city}.`,
 }
 
 export const dynamic = 'force-dynamic'

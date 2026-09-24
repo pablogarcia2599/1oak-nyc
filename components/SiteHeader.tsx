@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { Wordmark } from './Wordmark'
+import { VENUE } from '@/content/venue'
 import { cn } from '@/lib/utils'
 
 const LINKS = [
@@ -44,8 +45,8 @@ export function SiteHeader() {
         </nav>
         <span className="md:hidden" />
 
-        <Link href="/" aria-label="1 OAK New York — home" className="justify-self-center">
-          <Wordmark className="h-11 sm:h-12" priority />
+        <Link href="/" aria-label={`${VENUE.name} — home`} className="justify-self-center">
+          <Wordmark variant="inline" />
         </Link>
 
         <div className="justify-self-end">

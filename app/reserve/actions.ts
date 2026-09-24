@@ -120,7 +120,7 @@ export async function submitBooking(input: BookingInput): Promise<BookingResult>
       marketing_consent: v.marketing_consent,
       discount_code: v.discount_code || undefined,
       send_resources: true,
-      metadata: { source: 'microsite', venue: '1oak-nyc' },
+      metadata: { source: 'microsite', venue: '453-w-17th' },
       info: {
         full_name: v.full_name,
         email: v.email,

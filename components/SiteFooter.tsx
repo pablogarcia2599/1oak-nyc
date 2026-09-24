@@ -14,8 +14,10 @@ export function SiteFooter() {
     <footer className="border-t border-hairline-soft bg-ink-sunk">
       <div className="gutter mx-auto max-w-7xl py-16 sm:py-24">
         <div className="flex flex-col items-center text-center">
-          <Wordmark className="h-16 sm:h-20" />
-          <p className="label mt-6">{VENUE.tagline}</p>
+          <Wordmark className="scale-90" />
+          <p className="label mt-6">
+            {VENUE.neighborhood} · {VENUE.city}
+          </p>
         </div>
 
         <div className="mt-16 grid gap-10 border-t border-hairline-soft pt-12 sm:grid-cols-3 sm:gap-8">
@@ -76,14 +78,16 @@ export function SiteFooter() {
             <Link href="/legal/terms" className="transition-colors hover:text-mute">
               Terms
             </Link>
-            <a
-              href={VENUE.instagram}
-              target="_blank"
-              rel="noreferrer"
-              className="transition-colors hover:text-mute"
-            >
-              Instagram
-            </a>
+            {VENUE.instagram && (
+              <a
+                href={VENUE.instagram}
+                target="_blank"
+                rel="noreferrer"
+                className="transition-colors hover:text-mute"
+              >
+                Instagram
+              </a>
+            )}
           </div>
         </div>
       </div>
