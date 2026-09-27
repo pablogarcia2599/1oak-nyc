@@ -152,13 +152,21 @@ export function FloorMap({
           const selected = table._id === selectedId
           const bookable = table.available && !table.blocked
 
-          const reason = !bookable
-            ? partySize < table.minimum
-              ? `minimum ${table.minimum} guests`
-              : partySize > table.capacity
-                ? `seats ${table.capacity}`
-                : 'unavailable'
-            : undefined
+          // `available: false` covers two different things. A table the party
+          // does not fit is still for sale on another night; only a blocked
+          // one, or one the party fits that has gone, is actually sold.
+          const fitsParty = partySize >= table.minimum && partySize <= table.capacity
+          const soldOut = table.blocked || (!table.available && fitsParty)
+
+          const reason = soldOut
+            ? 'sold'
+            : !bookable
+              ? partySize < table.minimum
+                ? `minimum ${table.minimum} guests`
+                : partySize > table.capacity
+                  ? `seats ${table.capacity}`
+                  : 'unavailable'
+              : undefined
 
           return (
             <div key={table._id}>
@@ -194,11 +202,23 @@ export function FloorMap({
                     ? 'z-20 scale-125 ring-2 ring-bone'
                     : bookable
                       ? 'z-10 ring-1 ring-bone/25 hover:ring-bone/70'
-                      : 'z-0 cursor-not-allowed bg-ink/80',
+                      : 'z-0 cursor-not-allowed bg-ink/85',
                 )}
               >
                 <span className="sr-only">T{table.name}</span>
               </button>
+
+              {/* Small enough to sit between neighbouring tables, in the
+                  small-caps the rest of the interface labels things with. */}
+              {soldOut && (
+                <span
+                  aria-hidden
+                  style={{ left: `${left}%`, top: `${top}%` }}
+                  className="glass pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-hairline px-1.5 py-0.5 text-[0.5rem] font-medium uppercase leading-none tracking-[0.1em] text-mute"
+                >
+                  Sold
+                </span>
+              )}
 
               {/* The rate, right where the guest tapped. */}
               {selected && rate && (
