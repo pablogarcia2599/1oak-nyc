@@ -2,6 +2,7 @@
 
 import type { FvTable, FvTableRate, FvZone } from '@/types/fourvenues'
 import { FloorMap } from '../FloorMap'
+import { ZoneSwitch } from '../ZoneSwitch'
 import { VENUE } from '@/content/venue'
 import { BreakdownLines } from '../Breakdown'
 import { priceBreakdown } from '@/lib/pricing'
@@ -70,8 +71,13 @@ export function TableStep({
   }
 
   const rooms = roomsFrom(zone ? [zone] : zones)
-  const bounds = partyBounds(zones)
+  // Bounds of the room on screen, not of the venue: the two rooms here take
+  // different parties, and a limit from the other one would be wrong advice.
+  const zoneBounds = partyBounds(zone ? [zone] : zones)
   const nothingFree = rooms.every(r => r.availableCount === 0)
+  const elsewhere = zones.find(
+    z => z._id !== zone?._id && (z.spaces ?? []).some(space => space.available),
+  )
   const selectedRateId = table ? ratesFor(table, zone)[0]?._id : undefined
 
   const selectTable = (t: FvTable) => {
@@ -90,51 +96,60 @@ export function TableStep({
       <div>
         {heading}
 
-        {zones.length > 1 && (
-          <div className="mt-6 flex flex-wrap gap-2">
-            {zones.map(z => (
-              <button
-                key={z._id}
-                type="button"
-                onClick={() => onZone(z)}
-                aria-pressed={z._id === zone?._id}
-                className="chip"
-              >
-                {z.name}
-              </button>
-            ))}
-          </div>
-        )}
       </div>
 
       {nothingFree && (
         <div className="material p-6">
           <p className="text-[0.95rem] leading-relaxed text-bone">
-            Nothing is available for a party of <span className="text-gold-lit">{partySize}</span>{' '}
-            on this night.
-            {partySize < bounds.min && <> Tables here seat a minimum of {bounds.min} guests.</>}
-            {partySize > bounds.max && <> The largest table seats {bounds.max} guests.</>}
+            {zone ? `${zone.name} has nothing for a party of ` : 'Nothing is available for a party of '}
+            <span className="text-gold-lit">{partySize}</span> on this night.
+            {zone && partySize < zoneBounds.min && (
+              <> Tables there take a minimum of {zoneBounds.min} guests.</>
+            )}
+            {zone && partySize > zoneBounds.max && (
+              <> The largest table there seats {zoneBounds.max} guests.</>
+            )}
           </p>
-          {(partySize < bounds.min || partySize > bounds.max) && (
-            <button
-              type="button"
-              onClick={() => onPartySize(partySize < bounds.min ? bounds.min : bounds.max)}
-              className="btn btn-quiet mt-5 w-full sm:w-auto"
-            >
-              Set party to {partySize < bounds.min ? bounds.min : bounds.max}
-            </button>
-          )}
+
+          <div className="mt-5 flex flex-wrap gap-3">
+            {/* A room that does have space is the most useful thing to offer,
+                ahead of changing the party size. */}
+            {elsewhere && (
+              <button
+                type="button"
+                onClick={() => onZone(elsewhere)}
+                className="btn btn-primary w-full sm:w-auto"
+              >
+                Try {elsewhere.name}
+              </button>
+            )}
+            {(partySize < zoneBounds.min || partySize > zoneBounds.max) && (
+              <button
+                type="button"
+                onClick={() =>
+                  onPartySize(partySize < zoneBounds.min ? zoneBounds.min : zoneBounds.max)
+                }
+                className="btn btn-quiet w-full sm:w-auto"
+              >
+                Set party to {partySize < zoneBounds.min ? zoneBounds.min : zoneBounds.max}
+              </button>
+            )}
+          </div>
         </div>
       )}
 
       {zone && (
-        <FloorMap
-          zone={zone}
-          selectedId={table?._id}
-          partySize={partySize}
-          currency={currency}
-          onSelect={selectTable}
-        />
+        <div className="flex flex-col items-center gap-5">
+          {/* Directly above the plan, because it changes the plan. */}
+          <ZoneSwitch zones={zones} selectedId={zone._id} onSelect={onZone} />
+          <FloorMap
+            zone={zone}
+            selectedId={table?._id}
+            partySize={partySize}
+            currency={currency}
+            onSelect={selectTable}
+          />
+        </div>
       )}
 
       {/* What you just tapped, spelled out. */}

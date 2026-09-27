@@ -3,10 +3,10 @@
 import { useCallback, useMemo, useRef, useState } from 'react'
 import type { FvTable, FvZone } from '@/types/fourvenues'
 import {
-  isOnRequest,
-  MARKER_SIZE,
-  PLAN_IMAGE_STYLE,
   croppedAspect,
+  isOnRequest,
+  markerSize,
+  planImageStyle,
   planPosition,
   rateColor,
   ratesFor,
@@ -58,7 +58,8 @@ export function FloorMap({
   const tables = useMemo(() => (zone.spaces ?? []).filter(t => !t.hidden), [zone.spaces])
   const plan = zone.background_image
   // Seeded with this chart's proportions so the box never resizes on load.
-  const [aspect, setAspect] = useState(() => croppedAspect())
+  const zoneKey = zone.normalized_name
+  const [aspect, setAspect] = useState(() => croppedAspect(zoneKey))
   const planRef = useRef<HTMLDivElement>(null)
 
   /** How far a tap may miss and still count, in CSS pixels. */
@@ -80,7 +81,7 @@ export function FloorMap({
         // Must be the same positions the markers are drawn at, or a tap
         // resolves to a different table than the one under the finger.
         const at = plan
-          ? planPosition(table, zone.normalized_name)
+          ? planPosition(table, zoneKey)
           : spreadPosition(table, tables)
         const dx = (at.left / 100) * box.width - x
         const dy = (at.top / 100) * box.height - y
@@ -92,7 +93,7 @@ export function FloorMap({
 
       if (best) onSelect(best.table)
     },
-    [onSelect, plan, tables, zone.normalized_name],
+    [onSelect, plan, tables, zoneKey],
   )
 
   if (tables.length === 0) {
@@ -133,11 +134,11 @@ export function FloorMap({
             onLoad={event => {
               const { naturalWidth, naturalHeight } = event.currentTarget
               if (naturalWidth && naturalHeight) {
-                setAspect(croppedAspect(naturalWidth / naturalHeight))
+                setAspect(croppedAspect(zoneKey, naturalWidth / naturalHeight))
               }
             }}
             className="absolute left-0 w-full max-w-none"
-            style={PLAN_IMAGE_STYLE}
+            style={planImageStyle(zoneKey)}
           />
         ) : (
           <div className="aspect-4/3 w-full" />
@@ -145,7 +146,7 @@ export function FloorMap({
 
         {tables.map(table => {
           const { left, top } = plan
-            ? planPosition(table, zone.normalized_name)
+            ? planPosition(table, zoneKey)
             : spreadPosition(table, tables)
           const rate = ratesFor(table, zone)[0]
           const selected = table._id === selectedId
@@ -175,7 +176,7 @@ export function FloorMap({
                 style={{
                   left: `${left}%`,
                   top: `${top}%`,
-                  ...MARKER_SIZE,
+                  ...markerSize(zoneKey),
                   ...(selected
                     ? { backgroundColor: rateColor(rate, 1) ?? 'var(--color-gold)' }
                     : bookable

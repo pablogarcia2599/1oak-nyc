@@ -144,9 +144,27 @@ re-checking if the venue re-exports the chart.
 an empty Instagram, which the footer hides rather than pointing at the old
 account. These need the venue's real details before launch.
 
-## The seating plan
+## The seating plans
 
-The plan is the venue's own chart, cropped to the room and never re-hosted.
+Each zone has its own chart, and its geometry is measured rather than derived —
+`PLANS` in `lib/floorplan.ts`, keyed by the zone's `normalized_name`, carries
+the crop, the natural aspect, the circle size and every table's centre.
+
+| Zone | Image | Crop | Tables |
+| --- | --- | --- | --- |
+| `main-room` | 1640×2520 PNG | 16.5% / 3.2% — hides the old logo above the room | 23 |
+| `downstairs` | 1320×1224 JPEG | none; its ink runs 3%–99% | 8 |
+
+To add a room: correlate a matched ring filter over its image, keep the
+responses that separate cleanly from the rest, and pair them with the API's
+tables by column. An unmeasured zone falls back to the linear calibration, so
+it appears roughly right rather than not at all.
+
+Note that a zone's `normalized_name` is the key and the venue can change it —
+this one went from `vip-tables` to `main-room` when the second room was added,
+which silently unhitched every measured position until the key was updated.
+
+The plan is the venue's own chart, never re-hosted.
 
 - **Crop.** The asset carries its logo and a band of black above the floor — a
   fifth of a very tall portrait image. Cropping to 16.5%–96.8% of its height

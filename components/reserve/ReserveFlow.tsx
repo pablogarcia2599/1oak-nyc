@@ -80,8 +80,14 @@ export function ReserveFlow({
           setBounds(next)
           // Drop selections that the new availability no longer offers.
           setSelection(prev => {
-            // Keep the chosen room when it survives, otherwise open on the first.
-            const zone = data.find(z => z._id === prev.zone?._id) ?? data[0]
+            // A room the guest chose is kept even once it fills up — being
+            // moved out of it silently is worse than seeing it full. Only the
+            // opening choice prefers a room with something left.
+            const kept = data.find(z => z._id === prev.zone?._id)
+            const zone =
+              kept ??
+              data.find(z => (z.spaces ?? []).some(space => space.available)) ??
+              data[0]
             const table = (zone?.spaces ?? []).find(
               s => s._id === prev.table?._id && s.available,
             )

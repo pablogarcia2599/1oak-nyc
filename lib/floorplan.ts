@@ -37,97 +37,141 @@ export const PLAN_CALIBRATION = {
  *
  * The crop is CSS only — the venue's asset is never modified or re-hosted.
  */
-export const PLAN_CROP = {
-  top: 16.5,
-  bottom: 3.2,
-  /** Fallback until the real image reports its size, so nothing jumps on load. */
-  naturalAspect: 1640 / 2520,
-} as const
+/**
+ * Everything specific to one venue plan, measured rather than derived.
+ *
+ * A linear calibration cannot land on these circles: the venue stores its
+ * coordinates as rounded integers, so a table can sit a whole unit from where
+ * the artwork draws it. Each plan therefore carries its own measurements,
+ * taken by correlating a matched ring filter over the image and pairing the
+ * responses with the API's tables by column — a shape that matches on both
+ * sides and admits one assignment only.
+ *
+ * Keyed by the zone's `normalized_name`. An unlisted zone falls back to the
+ * calibration, so a new room appears roughly right rather than not at all.
+ */
+interface PlanSpec {
+  /** Share of the image height hidden at each end, as a percentage. */
+  crop: { top: number; bottom: number }
+  /** Used until the image reports its own, so the box never resizes on load. */
+  naturalAspect: number
+  /** The circle the artwork draws, as a share of the cropped viewport. */
+  marker: { width: number; height: number }
+  /** Measured centres, keyed by table name, within the cropped viewport. */
+  positions: Record<string, [number, number]>
+}
+
+function spec(
+  naturalWidth: number,
+  naturalHeight: number,
+  crop: { top: number; bottom: number },
+  circlePx: number,
+  positions: Record<string, [number, number]>,
+): PlanSpec {
+  const visible = (100 - crop.top - crop.bottom) / 100
+  return {
+    crop,
+    naturalAspect: naturalWidth / naturalHeight,
+    marker: {
+      width: (circlePx / naturalWidth) * 100,
+      height: ((circlePx / naturalHeight) * 100) / visible,
+    },
+    positions,
+  }
+}
+
+export const PLANS: Record<string, PlanSpec> = {
+  // This chart carries the venue's former logo above the room; the crop hides
+  // it, and the artwork starts just below where the crop ends.
+  'main-room': spec(1640, 2520, { top: 16.5, bottom: 3.2 }, 80, {
+      '1': [27.68, 14.64],
+      '2': [27.62, 18.39],
+      '3': [27.62, 22.3],
+      '4': [27.56, 26.15],
+      '5': [16.16, 37.86],
+      '6': [16.16, 42.26],
+      '7': [16.16, 54.42],
+      '8': [16.22, 58.62],
+      '9': [53.78, 12.07],
+      '10': [82.26, 12.07],
+      '11': [53.6, 25.11],
+      '12': [53.54, 30.2],
+      '13': [82.5, 25.26],
+      '14': [82.44, 30.11],
+      '15': [82.93, 42.95],
+      '16': [83.05, 55.16],
+      '17': [82.93, 66.97],
+      '18': [82.93, 77.69],
+      '19': [82.93, 81.55],
+      '20': [54.88, 77.65],
+      '21': [54.82, 81.55],
+      '22': [55.18, 90.3],
+      '23': [82.74, 90.3],
+  }),
+
+  // All plan, no header: its ink runs from 3% to 99% of the height.
+  downstairs: spec(1320, 1224, { top: 0, bottom: 0 }, 106, {
+      '1': [26.97, 27.12],
+      '2': [26.97, 41.26],
+      '3': [26.82, 55.07],
+      '4': [26.97, 68.55],
+      '5': [73.33, 26.96],
+      '6': [74.02, 43.63],
+      '7': [74.17, 59.15],
+      '8': [74.17, 73.28],
+  }),
+}
+
+const FALLBACK_CROP = { top: 0, bottom: 0 }
+
+function planOf(zoneKey?: string): PlanSpec | undefined {
+  return zoneKey ? PLANS[zoneKey] : undefined
+}
 
 /** Share of the original image height still on screen. */
-export const PLAN_VISIBLE = 100 - PLAN_CROP.top - PLAN_CROP.bottom
+export function planVisible(zoneKey?: string): number {
+  const crop = planOf(zoneKey)?.crop ?? FALLBACK_CROP
+  return 100 - crop.top - crop.bottom
+}
 
 /** Aspect ratio of the cropped viewport, given the image's own aspect. */
-export function croppedAspect(naturalAspect = PLAN_CROP.naturalAspect) {
-  return naturalAspect / (PLAN_VISIBLE / 100)
+export function croppedAspect(zoneKey?: string, naturalAspect?: number): number {
+  const aspect = naturalAspect ?? planOf(zoneKey)?.naturalAspect ?? 1
+  return aspect / (planVisible(zoneKey) / 100)
 }
 
 /** CSS for the image inside the cropping viewport. */
-export const PLAN_IMAGE_STYLE = {
-  height: `${(100 / PLAN_VISIBLE) * 100}%`,
-  top: `-${(PLAN_CROP.top / PLAN_VISIBLE) * 100}%`,
-} as const
-
-/**
- * Exact marker positions, read off the venue's own chart.
- *
- * The calibration below is the best a linear fit can do, and it is not good
- * enough: the venue stores coordinates as rounded integers, so T1 sits a whole
- * unit — 57px on the source image, 3.5% of its width — from where the artwork
- * draws it. No scale and offset can absorb that.
- *
- * These are therefore measured rather than computed. A matched filter for a
- * 32–40px ring was correlated over the chart; the 23 strongest responses
- * (15.6–21.3, with the next at 11.7) are the 23 table circles, and they were
- * paired with the API's tables by column, whose shape — 4, 4, 6, 9 — matches
- * on both sides and admits only one assignment. Values are percentages of the
- * cropped plan, so they move with `PLAN_CROP`.
- *
- * Keyed by zone `normalized_name`, then table `name`. Anything not listed
- * falls back to the calibration, so a new table appears roughly right rather
- * than not at all. Re-measure if the venue replaces its chart.
- */
-export const PLAN_OVERRIDES: Record<string, Record<string, [number, number]>> = {
-  'vip-tables': {
-    '1': [27.68, 14.64],
-    '2': [27.62, 18.39],
-    '3': [27.62, 22.3],
-    '4': [27.56, 26.15],
-    '5': [16.16, 37.86],
-    '6': [16.16, 42.26],
-    '7': [16.16, 54.42],
-    '8': [16.22, 58.62],
-    '9': [53.78, 12.07],
-    '10': [82.26, 12.07],
-    '11': [53.6, 25.11],
-    '12': [53.54, 30.2],
-    '13': [82.5, 25.26],
-    '14': [82.44, 30.11],
-    '15': [82.93, 42.95],
-    '16': [83.05, 55.16],
-    '17': [82.93, 66.97],
-    '18': [82.93, 77.69],
-    '19': [82.93, 81.55],
-    '20': [54.88, 77.65],
-    '21': [54.82, 81.55],
-    '22': [55.18, 90.3],
-    '23': [82.74, 90.3],
-  },
+export function planImageStyle(zoneKey?: string) {
+  const crop = planOf(zoneKey)?.crop ?? FALLBACK_CROP
+  const visible = planVisible(zoneKey)
+  return {
+    height: `${(100 / visible) * 100}%`,
+    top: `-${(crop.top / visible) * 100}%`,
+  }
 }
 
-/**
- * Position within the *cropped* viewport, which is what the map renders.
- * A measured position wins; the calibration is the fallback.
- */
+/** The marker matches the circle the plan draws, so the two coincide. */
+export function markerSize(zoneKey?: string) {
+  const marker = planOf(zoneKey)?.marker
+  return marker
+    ? { width: `${marker.width}%`, height: `${marker.height}%` }
+    : { width: '5.6%', height: '4.5%' }
+}
+
 export function planPosition(table: FvTable, zoneKey?: string) {
-  const measured = zoneKey ? PLAN_OVERRIDES[zoneKey]?.[table.name] : undefined
+  const measured = planOf(zoneKey)?.positions[table.name]
   if (measured) return { left: measured[0], top: measured[1] }
 
   const { scaleX, offsetX, scaleY, offsetY } = PLAN_CALIBRATION
+  const crop = planOf(zoneKey)?.crop ?? FALLBACK_CROP
   const topInImage = table.position.y * scaleY + offsetY
   return {
     left: table.position.x * scaleX + offsetX,
-    top: ((topInImage - PLAN_CROP.top) / PLAN_VISIBLE) * 100,
+    top: ((topInImage - crop.top) / planVisible(zoneKey)) * 100,
   }
 }
 
 /** The chart draws its circles 80px across on a 1640x2520 plan. */
-export const MARKER_SIZE = {
-  width: `${(80 / 1640) * 100}%`,
-  height: `${((80 / 2520) * 100) / (PLAN_VISIBLE / 100)}%`,
-} as const
-
-/** Falls back to spreading tables across the box when there is no plan image. */
 export function spreadPosition(table: FvTable, all: FvTable[]) {
   const xs = all.map(t => t.position?.x ?? 50)
   const ys = all.map(t => t.position?.y ?? 50)
