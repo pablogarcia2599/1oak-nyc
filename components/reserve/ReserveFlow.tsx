@@ -309,20 +309,12 @@ export function ReserveFlow({
           {/* Desktop actions sit in the column; on a phone they live in the
               fixed bar below, within thumb reach.
 
-              Grouped at the column's left edge rather than pushed to its far
-              side: the page is read from the left, and `justify-between` left
-              the primary action some 500px from the last control touched.
-              Back keeps its slot when unavailable, so Continue never moves
-              between steps. */}
+              Continue comes first so it starts flush with the content's left
+              edge, where every heading and control on the page starts. Back
+              follows it: reserving a slot to its left kept Continue from
+              moving between steps but pushed it out of alignment with
+              everything above it, which was the more visible fault. */}
           <div className="mt-12 hidden items-center gap-3 border-t border-hairline-soft pt-8 lg:flex">
-            <button
-              type="button"
-              onClick={() => goTo(Math.max(0, step - 1))}
-              disabled={step === 0 || pending}
-              className="btn btn-quiet disabled:invisible"
-            >
-              Back
-            </button>
             {step < STEPS.length - 1 ? (
               <button
                 type="button"
@@ -340,6 +332,17 @@ export function ReserveFlow({
                 className="btn btn-primary min-w-52"
               >
                 {confirmLabel}
+              </button>
+            )}
+
+            {step > 0 && (
+              <button
+                type="button"
+                onClick={() => goTo(step - 1)}
+                disabled={pending}
+                className="btn btn-plain"
+              >
+                Back
               </button>
             )}
           </div>
