@@ -29,7 +29,10 @@ export function ReserveFlow({
   const [step, setStep] = useState(0)
   const [selection, setSelection] = useState<Selection>({
     event: initialEvent,
-    partySize: 2,
+    // The party most tables here are sized for, so the floor opens with
+    // something on it. The snap below still corrects it for a venue whose
+    // tables start higher.
+    partySize: 8,
   })
   const [bounds, setBounds] = useState<{ min: number; max: number } | null>(null)
   const [guest, setGuest] = useState<GuestDetails>(EMPTY_GUEST)
@@ -115,9 +118,9 @@ export function ReserveFlow({
     }
   }, [selection.event, selection.partySize])
 
-  // This venue's tables carry a minimum party size, so the default of 2 would
-  // show an empty floor. Snap into range once per night — after that the guest
-  // owns the number, including the edges.
+  // Tables carry a minimum party size, and the default will not suit every
+  // venue. Snap into range once per night — after that the guest owns the
+  // number, including the edges.
   useEffect(() => {
     const event = selection.event
     if (!bounds || !event || snappedEvent === event._id) return
