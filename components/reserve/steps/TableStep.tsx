@@ -221,8 +221,10 @@ export function TableStep({
                           +
                         </span>
                       </span>
-                      <span className="figure mt-2 block text-2xl text-bone">
-                        {formatMoney(price.atVenue, currency, { cents: true })}
+                      {/* Fees and tax, as rates — the amount depends on the
+                          night, so there is no figure to put here. */}
+                      <span className="mt-2 block text-[0.95rem] leading-tight text-mute">
+                        Fees and tax on the night
                       </span>
                     </div>
                   </summary>

@@ -3,17 +3,27 @@
 import type { Breakdown, PriceLine } from '@/lib/pricing'
 import { formatMoney } from '@/lib/utils'
 
+/**
+ * A charge, with money in the right-hand column when the amount is committed
+ * and the rate there when it is not. Nothing is quoted to the cent that the
+ * venue has not actually agreed to take.
+ */
 function Lines({ lines, currency }: { lines: PriceLine[]; currency: string }) {
   return (
     <>
       {lines.map(line => (
         <div key={line.label} className="flex items-baseline justify-between gap-6 py-2">
-          <dt className="text-[0.95rem] text-mute">
-            {line.label}
-            {line.note && <span className="text-faint"> · {line.note}</span>}
-          </dt>
-          <dd className="figure shrink-0 text-[0.95rem] text-bone">
-            {formatMoney(line.amount, currency, { cents: true })}
+          <dt className="text-[0.95rem] text-mute">{line.label}</dt>
+          <dd
+            className={
+              line.amount !== undefined
+                ? 'figure shrink-0 text-[0.95rem] text-bone'
+                : 'figure shrink-0 text-[0.95rem] text-mute'
+            }
+          >
+            {line.amount !== undefined
+              ? formatMoney(line.amount, currency, { cents: true })
+              : line.rate}
           </dd>
         </div>
       ))}
@@ -22,9 +32,10 @@ function Lines({ lines, currency }: { lines: PriceLine[]; currency: string }) {
 }
 
 /**
- * The charge lines, grouped by when they fall due, shared by the table card
- * and the confirmation step. What is taken online and what is settled at the
- * door are different commitments, so they are never summed into one column.
+ * The charges, grouped by when they fall due. What is taken online and what is
+ * settled at the door are different commitments, so they are never summed into
+ * one column — and the second group carries no total, because its amount is
+ * not known until the night.
  */
 export function BreakdownLines({
   price,
@@ -46,13 +57,9 @@ export function BreakdownLines({
       <div className="mt-1">
         <Lines lines={price.later} currency={currency} />
       </div>
-
-      <div className="mt-4 flex items-baseline justify-between gap-6 border-t border-hairline-soft pt-3">
-        <dt className="text-[0.95rem] text-mute">Total</dt>
-        <dd className="figure shrink-0 text-[0.95rem] text-bone">
-          {formatMoney(price.total, currency, { cents: true })}
-        </dd>
-      </div>
+      <p className="mt-3 text-xs leading-relaxed text-faint">
+        Applied to your final bill on the night.
+      </p>
 
       {note && <p className="label pt-3">{note}</p>}
     </dl>

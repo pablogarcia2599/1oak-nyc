@@ -38,19 +38,11 @@ export function PricePanel({
       </p>
 
       <div className="material-lg mt-6 overflow-hidden">
-        <div className="grid grid-cols-2 gap-px bg-hairline-soft">
-          <div className="bg-ink p-6">
-            <span className="label label-gold block">Pay now</span>
-            <span className="figure mt-2 block text-2xl text-gold-lit">
-              {formatMoney(price.payNow, currency, { cents: true })}
-            </span>
-          </div>
-          <div className="bg-ink p-6">
-            <span className="label block">At the venue</span>
-            <span className="figure mt-2 block text-2xl text-bone">
-              {formatMoney(price.atVenue, currency, { cents: true })}
-            </span>
-          </div>
+        <div className="flex items-baseline justify-between gap-6 p-6">
+          <span className="label label-gold">Pay now</span>
+          <span className="figure text-3xl text-gold-lit">
+            {formatMoney(price.payNow, currency, { cents: true })}
+          </span>
         </div>
 
         <details className="group border-t border-hairline-soft">
@@ -76,8 +68,8 @@ export function PricePanel({
         <p className="border-t border-hairline-soft p-6 text-xs leading-relaxed text-faint">
           {formatMoney(price.payNow, currency, { cents: true })} is taken now — the table
           and the processing fee. The administration fee, service charge and tax are
-          settled with the venue on the night. Fourvenues&rsquo; secure payment page confirms the exact amount
-          before any charge.
+          applied to your final bill at the venue. Fourvenues&rsquo; secure payment page
+          confirms the exact amount before any charge.
         </p>
       </div>
 

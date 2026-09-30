@@ -41,12 +41,9 @@ export function SummaryContent({
               {formatMoney(price.payNow, currency, { cents: true })}
             </span>
           </div>
-          <div className="mt-3 flex items-baseline justify-between gap-4">
-            <span className="label">At the venue</span>
-            <span className="figure text-sm text-mute">
-              {formatMoney(price.atVenue, currency, { cents: true })}
-            </span>
-          </div>
+          <p className="mt-2 text-xs leading-relaxed text-faint">
+            Fees and tax are applied to your final bill at the venue.
+          </p>
         </div>
       )}
 
