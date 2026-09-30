@@ -139,18 +139,20 @@ export async function submitBooking(input: BookingInput): Promise<BookingResult>
       }
     }
 
-    // The site computes the breakdown; Fourvenues computes what is charged. If
-    // the venue has not configured the service charge, fee and tax on the rate,
-    // the guest reads one figure here and pays another on the payment page.
-    // Proceed — that page is the source of truth — but make the gap loud.
-    const expected = priceBreakdown(v.minimum_spend ?? 0).total
+    // The site computes the breakdown; Fourvenues computes what is charged.
+    // Only the table and its administration fee are taken online now, so that
+    // is the figure to watch: if the venue still has the service charge and
+    // tax on the rate, the guest reads one number here and pays another.
+    // Proceed — the payment page is the source of truth — but make it loud.
+    const expected = priceBreakdown(v.minimum_spend ?? 0).payNow
     if (v.minimum_spend && checkout.total_amount && Math.abs(checkout.total_amount - expected) > 1) {
       console.error(
-        '[submitBooking] total mismatch — site showed',
+        '[submitBooking] pay-now mismatch — site showed',
         expected,
         'Fourvenues will charge',
         checkout.total_amount,
-        '· configure the charges on the rate in FV Pro',
+        '· the rate should carry the administration fee only, with the service',
+        'charge and tax settled at the venue',
       )
     }
 

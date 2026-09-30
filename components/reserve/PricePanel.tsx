@@ -1,7 +1,6 @@
 'use client'
 
 import type { Selection } from './types'
-import { depositFor } from './types'
 import { BreakdownLines } from './Breakdown'
 import { priceBreakdown } from '@/lib/pricing'
 import { doorTime, formatMoney, nightDate } from '@/lib/utils'
@@ -25,8 +24,6 @@ export function PricePanel({
   if (!event || !zone || !rate) return null
 
   const date = nightDate(event)
-  const deposit = depositFor(rate)
-  const inFull = deposit >= rate.price
   const extraGuests = Math.max(0, partySize - rate.included_persons)
   const supplements = extraGuests * (rate.supplement_price ?? 0)
   const price = priceBreakdown(rate.price, supplements)
@@ -41,11 +38,19 @@ export function PricePanel({
       </p>
 
       <div className="material-lg mt-6 overflow-hidden">
-        <div className="flex items-baseline justify-between gap-6 p-6">
-          <span className="label">Total</span>
-          <span className="figure text-3xl text-gold-lit">
-            {formatMoney(price.total, currency, { cents: true })}
-          </span>
+        <div className="grid grid-cols-2 gap-px bg-hairline-soft">
+          <div className="bg-ink p-6">
+            <span className="label label-gold block">Pay now</span>
+            <span className="figure mt-2 block text-2xl text-gold-lit">
+              {formatMoney(price.payNow, currency, { cents: true })}
+            </span>
+          </div>
+          <div className="bg-ink p-6">
+            <span className="label block">At the venue</span>
+            <span className="figure mt-2 block text-2xl text-bone">
+              {formatMoney(price.atVenue, currency, { cents: true })}
+            </span>
+          </div>
         </div>
 
         <details className="group border-t border-hairline-soft">
@@ -55,7 +60,6 @@ export function PricePanel({
               +
             </span>
           </summary>
-
           <div className="px-6 pb-6">
             <BreakdownLines
               price={price}
@@ -70,9 +74,10 @@ export function PricePanel({
         </details>
 
         <p className="border-t border-hairline-soft p-6 text-xs leading-relaxed text-faint">
-          {inFull
-            ? 'The table is prepaid. Fourvenues’ secure payment page confirms the exact amount before any charge.'
-            : `A deposit of ${formatMoney(deposit, currency)} holds the table; the balance settles on the night. Fourvenues’ secure payment page confirms the exact amount before any charge.`}
+          {formatMoney(price.payNow, currency, { cents: true })} is taken now — the table
+          and its administration fee. The service charge and tax are settled with the venue
+          on the night. Fourvenues&rsquo; secure payment page confirms the exact amount
+          before any charge.
         </p>
       </div>
 

@@ -403,11 +403,16 @@ export function ReserveFlow({
             </p>
             {selection.rate && (
               <p className="truncate text-sm text-gold-lit">
-                {isOnRequest(selection.rate)
-                  ? 'On request'
-                  : formatMoney(priceBreakdown(selection.rate.price).total, currency, {
+                {isOnRequest(selection.rate) ? (
+                  'On request'
+                ) : (
+                  <>
+                    {formatMoney(priceBreakdown(selection.rate.price).payNow, currency, {
                       cents: true,
-                    })}
+                    })}{' '}
+                    <span className="text-faint">now</span>
+                  </>
+                )}
               </p>
             )}
           </div>

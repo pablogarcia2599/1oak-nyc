@@ -209,23 +209,20 @@ export function TableStep({
                 <details className="group">
                   <summary className="grid cursor-pointer list-none grid-cols-2 gap-px bg-hairline-soft">
                     <div className="bg-ink p-5 sm:p-6">
-                      <span className="label block">Minimum spend</span>
-                      <span className="figure mt-2 block text-2xl text-bone">
-                        {formatMoney(rate.price, currency)}
-                        {/* Charges and tax sit on top of it, so the figure alone
-                            would read as the whole cost. */}
-                        <span className="text-mute"> +</span>
+                      <span className="label label-gold block">Pay now</span>
+                      <span className="figure mt-2 block text-2xl text-gold-lit">
+                        {formatMoney(price.payNow, currency, { cents: true })}
                       </span>
                     </div>
                     <div className="bg-ink p-5 sm:p-6">
                       <span className="label flex items-center justify-between gap-3">
-                        Payable now
+                        At the venue
                         <span className="text-gold transition-transform duration-300 group-open:rotate-45">
                           +
                         </span>
                       </span>
-                      <span className="figure mt-2 block text-2xl text-gold-lit">
-                        {formatMoney(price.total, currency, { cents: true })}
+                      <span className="figure mt-2 block text-2xl text-bone">
+                        {formatMoney(price.atVenue, currency, { cents: true })}
                       </span>
                     </div>
                   </summary>
