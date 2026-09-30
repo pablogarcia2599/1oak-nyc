@@ -3,6 +3,7 @@
 import type { Selection } from './types'
 import { BreakdownLines } from './Breakdown'
 import { priceBreakdown } from '@/lib/pricing'
+import { ADDITIONAL_CHARGES } from '@/content/venue'
 import { doorTime, formatMoney, nightDate } from '@/lib/utils'
 
 /**
@@ -67,8 +68,7 @@ export function PricePanel({
 
         <p className="border-t border-hairline-soft p-6 text-xs leading-relaxed text-faint">
           {formatMoney(price.payNow, currency, { cents: true })} is taken now — the table
-          and the processing fee. The administration fee, service charge and tax are
-          applied to your final bill at the venue. Fourvenues&rsquo; secure payment page
+          and the processing fee. {ADDITIONAL_CHARGES} Fourvenues&rsquo; secure payment page
           confirms the exact amount before any charge.
         </p>
       </div>

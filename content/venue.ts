@@ -20,6 +20,13 @@ export const VENUE = {
   mapsUrl: 'https://maps.google.com/?q=453+W+17th+St+New+York',
 } as const
 
+/**
+ * The venue's own wording for what it settles at the door. It replaces a
+ * priced list of fees, so it is quoted verbatim rather than paraphrased.
+ */
+export const ADDITIONAL_CHARGES =
+  'Any additional spend, sales tax, administrative or service fees, and optional gratuity will be charged separately by the venue at the time of service, with your approval.'
+
 export const FAQ = [
   {
     q: 'What does a table reservation include?',

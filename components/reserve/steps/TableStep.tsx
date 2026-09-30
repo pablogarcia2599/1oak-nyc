@@ -207,26 +207,16 @@ export function TableStep({
 
               return (
                 <details className="group">
-                  <summary className="grid cursor-pointer list-none grid-cols-2 gap-px bg-hairline-soft">
-                    <div className="bg-ink p-5 sm:p-6">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 bg-ink p-5 sm:p-6">
+                    <span>
                       <span className="label label-gold block">Pay now</span>
                       <span className="figure mt-2 block text-2xl text-gold-lit">
                         {formatMoney(price.payNow, currency, { cents: true })}
                       </span>
-                    </div>
-                    <div className="bg-ink p-5 sm:p-6">
-                      <span className="label flex items-center justify-between gap-3">
-                        At the venue
-                        <span className="text-gold transition-transform duration-300 group-open:rotate-45">
-                          +
-                        </span>
-                      </span>
-                      {/* Fees and tax, as rates — the amount depends on the
-                          night, so there is no figure to put here. */}
-                      <span className="mt-2 block text-[0.95rem] leading-tight text-mute">
-                        Fees and tax on the night
-                      </span>
-                    </div>
+                    </span>
+                    <span className="text-gold transition-transform duration-300 group-open:rotate-45">
+                      +
+                    </span>
                   </summary>
 
                   <div className="border-t border-hairline-soft p-5 sm:p-6">

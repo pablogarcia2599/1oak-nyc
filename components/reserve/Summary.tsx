@@ -42,7 +42,8 @@ export function SummaryContent({
             </span>
           </div>
           <p className="mt-2 text-xs leading-relaxed text-faint">
-            Fees and tax are applied to your final bill at the venue.
+            Additional spend, tax, fees and gratuity are charged by the venue at the
+            time of service.
           </p>
         </div>
       )}
