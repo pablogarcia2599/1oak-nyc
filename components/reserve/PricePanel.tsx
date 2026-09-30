@@ -75,8 +75,8 @@ export function PricePanel({
 
         <p className="border-t border-hairline-soft p-6 text-xs leading-relaxed text-faint">
           {formatMoney(price.payNow, currency, { cents: true })} is taken now — the table
-          and its administration fee. The service charge and tax are settled with the venue
-          on the night. Fourvenues&rsquo; secure payment page confirms the exact amount
+          and the processing fee. The administration fee, service charge and tax are
+          settled with the venue on the night. Fourvenues&rsquo; secure payment page confirms the exact amount
           before any charge.
         </p>
       </div>
