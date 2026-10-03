@@ -50,3 +50,15 @@ export function nightDate(event: {
 export function doorTime(event: { start_date: string; location?: { timezone?: string } }) {
   return eventDateParts(event.start_date, event.location?.timezone).time
 }
+
+/** The night's run, door to close — "11:00 PM – 4:00 AM". */
+export function doorHours(event: {
+  start_date: string
+  end_date?: string
+  location?: { timezone?: string }
+}) {
+  const open = eventDateParts(event.start_date, event.location?.timezone).time
+  if (!event.end_date) return open
+  const close = eventDateParts(event.end_date, event.location?.timezone).time
+  return `${open} – ${close}`
+}

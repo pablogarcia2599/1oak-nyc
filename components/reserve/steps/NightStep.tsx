@@ -1,8 +1,9 @@
 'use client'
 
 import type { FvEvent } from '@/types/fourvenues'
+import Image from 'next/image'
 import { PartySize } from '../PartySize'
-import { cn, doorTime, nightDate } from '@/lib/utils'
+import { cn, doorHours, nightDate } from '@/lib/utils'
 
 export function NightStep({
   events,
@@ -43,21 +44,53 @@ export function NightStep({
                       selected ? 'border-gold/60 text-bone' : 'text-mute hover:border-hairline',
                     )}
                   >
-                    <span
-                      className={cn(
-                        'h-2 w-2 shrink-0 rounded-full transition-colors duration-300',
-                        selected ? 'bg-gold' : 'bg-hairline',
-                      )}
-                      aria-hidden
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="heading block text-xl text-inherit sm:text-2xl">
-                        {date.weekdayLong} {date.day} {date.monthLong}
+                    {/* The artwork, small: it tells one night from another
+                        at a glance without turning the list into a gallery. */}
+                    {event.image_url ? (
+                      <span
+                        className={cn(
+                          'relative block h-14 w-14 shrink-0 overflow-hidden rounded-sm transition-opacity duration-300',
+                          selected ? 'opacity-100' : 'opacity-70',
+                        )}
+                      >
+                        <Image
+                          src={event.image_url}
+                          alt=""
+                          fill
+                          sizes="56px"
+                          className="object-cover"
+                        />
                       </span>
-                      <span className="label mt-1.5 block">
-                        Doors {doorTime(event)} · {event.age}+
+                    ) : (
+                      <span
+                        className={cn(
+                          'h-2 w-2 shrink-0 rounded-full transition-colors duration-300',
+                          selected ? 'bg-gold' : 'bg-hairline',
+                        )}
+                        aria-hidden
+                      />
+                    )}
+
+                    <span className="min-w-0 flex-1">
+                      <span className="label label-gold block">
+                        {date.weekday} · {date.day} {date.month}
+                      </span>
+                      {/* Two lines, not one: the part that tells a night
+                          apart is often at the end of its name. */}
+                      <span className="heading mt-1.5 line-clamp-2 block text-lg text-inherit">
+                        {event.name}
+                      </span>
+                      <span className="label mt-1 block normal-case tracking-normal">
+                        {doorHours(event)} · {event.age}+
                       </span>
                     </span>
+
+                    {selected && (
+                      <span
+                        aria-hidden
+                        className="h-2 w-2 shrink-0 rounded-full bg-gold"
+                      />
+                    )}
                   </button>
                 </li>
               )
