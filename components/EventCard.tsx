@@ -4,12 +4,11 @@ import type { FvEvent } from '@/types/fourvenues'
 import { doorHours, formatMoney, nightDate } from '@/lib/utils'
 
 /**
- * A night, as the venue publishes it: its artwork, its name, when it runs and
- * what a table starts at.
- *
- * The image is whatever `image_url` carries. Today every event points at the
- * channel's own flyer, so the cards share one picture until the venue uploads
- * artwork per night — which is a thing to fix in the back office, not here.
+ * A night as a bill poster: the artwork whole, and under it the date stacked
+ * beside the name, divided by the hairline the forms and the lockup already
+ * use. The image meets the bar on a hard edge rather than fading into it —
+ * the artwork is the venue's, and dimming its lower third to blend with the
+ * card throws away the part a designer put there.
  */
 export function EventCard({ event, fromPrice }: { event: FvEvent; fromPrice?: number }) {
   const date = nightDate(event)
@@ -25,28 +24,32 @@ export function EventCard({ event, fromPrice }: { event: FvEvent; fromPrice?: nu
             src={event.image_url}
             alt=""
             fill
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            sizes="(max-width: 640px) 100vw, (max-width: 1280px) 50vw, 33vw"
             className="object-cover transition-transform duration-[900ms] ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-[1.03]"
           />
-          {/* Lets the artwork meet the card instead of ending on a hard edge. */}
-          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-ink to-transparent" />
         </div>
       )}
 
-      <div className="flex flex-1 flex-col justify-between gap-6 p-5 sm:p-6">
-        <div>
-          <p className="label label-gold">
-            {date.weekday} · {date.day} {date.month}
-          </p>
-          <h3 className="heading heading-md mt-3 text-bone">{event.name}</h3>
-          <p className="mt-3 text-sm text-mute">
-            {doorHours(event)} · {event.age}+
-          </p>
+      <div className="flex items-stretch gap-5 p-5 sm:gap-6 sm:p-6">
+        <div className="flex shrink-0 flex-col items-center justify-center text-center">
+          <span className="label">{date.weekday}</span>
+          <span className="label mt-0.5">{date.month}</span>
+          <span className="figure mt-1 text-3xl leading-none text-bone">{date.day}</span>
         </div>
 
-        <p className="label transition-colors duration-500 group-hover:text-gold-lit">
-          {fromPrice ? `Tables from ${formatMoney(fromPrice, event.currency)}` : 'Reserve'}
-        </p>
+        <span aria-hidden className="w-px shrink-0 self-stretch bg-hairline" />
+
+        <div className="flex min-w-0 flex-col justify-center">
+          <h3 className="heading heading-md text-bone">{event.name}</h3>
+          <p className="mt-2 text-sm text-mute">
+            <span className="whitespace-nowrap">{doorHours(event)}</span> · {event.age}+
+          </p>
+          {fromPrice !== undefined && (
+            <p className="label mt-2 transition-colors duration-500 group-hover:text-gold-lit">
+              Tables from {formatMoney(fromPrice, event.currency)}
+            </p>
+          )}
+        </div>
       </div>
     </Link>
   )

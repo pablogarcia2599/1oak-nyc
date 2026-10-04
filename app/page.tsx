@@ -109,7 +109,7 @@ export default async function HomePage() {
                 No nights on sale right now. Check back shortly.
               </p>
             ) : (
-              <div className="grid-hairline grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid-hairline grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
                 {events.map((event, i) => (
                   <Reveal key={event._id} delay={i * 60}>
                     <EventCard event={event} fromPrice={fromPrice} />
