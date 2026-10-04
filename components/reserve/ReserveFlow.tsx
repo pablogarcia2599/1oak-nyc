@@ -5,6 +5,7 @@ import type { FvEvent, FvTable, FvTableRate, FvZone } from '@/types/fourvenues'
 import { submitBooking } from '@/app/reserve/actions'
 import { Stepper } from './Stepper'
 import { NightStep } from './steps/NightStep'
+import { PartySize } from './PartySize'
 import { TableStep } from './steps/TableStep'
 import { GuestStep } from './steps/GuestStep'
 import { PricePanel } from './PricePanel'
@@ -374,13 +375,24 @@ export function ReserveFlow({
         className="glass fixed inset-x-0 bottom-0 z-40 border-t border-hairline-soft lg:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        <div className="gutter flex items-center gap-3 py-3.5">
+        {/* On the first step the range lives here, above the row: the pill
+            shares that row with Continue and has no width to spare. */}
+        {step === 0 && bounds && (
+          <p className="gutter label pt-2.5 pb-0.5">
+            {bounds.min}–{bounds.max} guests per table
+          </p>
+        )}
+
+        <div className="gutter @container flex items-center gap-3 py-3.5">
           {/* A drawn chevron rather than an arrow glyph, and no chrome around
-              it: the bar already has one emphasis, and it is the gold button. */}
+              it: the bar already has one emphasis, and it is the gold button.
+              Not rendered on the first step rather than merely hidden — the
+              party pill needs the width it would hold. */}
+          {step > 0 && (
           <button
             type="button"
             onClick={() => goTo(Math.max(0, step - 1))}
-            disabled={step === 0 || pending}
+            disabled={pending}
             aria-label="Back"
             className="-ml-3 flex h-12 w-12 shrink-0 items-center justify-center text-mute transition-colors duration-200 hover:text-bone active:text-bone disabled:invisible"
           >
@@ -394,7 +406,18 @@ export function ReserveFlow({
               />
             </svg>
           </button>
+          )}
 
+          {step === 0 ? (
+            <div className="min-w-0 flex-1">
+              <PartySize
+                value={selection.partySize}
+                bounds={bounds}
+                onChange={n => setSelection(prev => ({ ...prev, partySize: n }))}
+                compact
+              />
+            </div>
+          ) : (
           <div className="min-w-0 flex-1">
             <p className="label truncate">
               {selection.rate
@@ -416,6 +439,7 @@ export function ReserveFlow({
               </p>
             )}
           </div>
+          )}
 
           {step < STEPS.length - 1 ? (
             <button

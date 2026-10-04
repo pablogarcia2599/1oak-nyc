@@ -53,7 +53,7 @@ export function NightPoster({
         <span aria-hidden className="w-px shrink-0 self-stretch bg-hairline" />
 
         <div className="flex min-w-0 flex-col justify-center">
-          <h3 className="heading line-clamp-3 text-[0.8rem] leading-[1.2] font-medium tracking-[0.035em] text-bone @min-[15rem]:line-clamp-none @min-[15rem]:text-[0.95rem] @min-[22rem]:text-[1.05rem]">
+          <h3 className="heading line-clamp-3 break-words text-[0.8rem] leading-[1.2] font-medium tracking-[0.035em] text-bone @min-[15rem]:line-clamp-none @min-[15rem]:text-[0.95rem] @min-[22rem]:text-[1.05rem]">
             {event.name}
           </h3>
           <p className="mt-2 hidden text-sm text-mute @min-[15rem]:block">

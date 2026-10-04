@@ -60,7 +60,9 @@ export function NightStep({
         )}
       </section>
 
-      <section>
+      {/* Phones carry this in the action bar, so the night and the party
+          size are both set without leaving the top of the step. */}
+      <section className="hidden lg:block">
         <h2 className="heading heading-md text-bone">How many guests?</h2>
         <p className="mt-4 max-w-md text-[0.95rem] leading-relaxed text-mute">
           {bounds
