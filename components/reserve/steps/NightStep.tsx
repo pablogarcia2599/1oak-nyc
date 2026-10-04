@@ -1,9 +1,9 @@
 'use client'
 
 import type { FvEvent } from '@/types/fourvenues'
-import Image from 'next/image'
+import { NightPoster } from '@/components/NightPoster'
 import { PartySize } from '../PartySize'
-import { cn, doorHours, nightDate } from '@/lib/utils'
+import { cn } from '@/lib/utils'
 
 export function NightStep({
   events,
@@ -21,6 +21,8 @@ export function NightStep({
   bounds: { min: number; max: number } | null
   onPartySize: (n: number) => void
 }) {
+  const hasSelection = events.some(event => event._id === selectedId)
+
   return (
     <div className="space-y-14">
       <section>
@@ -29,66 +31,25 @@ export function NightStep({
         {events.length === 0 ? (
           <p className="material mt-8 p-6 text-sm text-mute">No nights are on sale right now.</p>
         ) : (
-          <ul className="mt-8 space-y-2">
+          <ul className="mt-8 grid grid-cols-2 gap-2 xl:grid-cols-3 xl:gap-3">
             {events.map(event => {
-              const date = nightDate(event)
               const selected = event._id === selectedId
               return (
-                <li key={event._id}>
+                <li key={event._id} className="contents">
                   <button
                     type="button"
                     onClick={() => onSelect(event)}
                     aria-pressed={selected}
                     className={cn(
-                      'material flex w-full items-center gap-4 p-4 text-left transition-all duration-300 active:scale-[0.99]',
-                      selected ? 'border-gold/60 text-bone' : 'text-mute hover:border-hairline',
+                      'material group @container relative flex h-full flex-col overflow-hidden transition-all duration-300 active:scale-[0.99]',
+                      selected ? 'border-gold/60' : 'hover:border-hairline',
                     )}
                   >
-                    {/* The artwork, small: it tells one night from another
-                        at a glance without turning the list into a gallery. */}
-                    {event.image_url ? (
-                      <span
-                        className={cn(
-                          'relative block h-14 w-14 shrink-0 overflow-hidden rounded-sm transition-opacity duration-300',
-                          selected ? 'opacity-100' : 'opacity-70',
-                        )}
-                      >
-                        <Image
-                          src={event.image_url}
-                          alt=""
-                          fill
-                          sizes="56px"
-                          className="object-cover"
-                        />
-                      </span>
-                    ) : (
-                      <span
-                        className={cn(
-                          'h-2 w-2 shrink-0 rounded-full transition-colors duration-300',
-                          selected ? 'bg-gold' : 'bg-hairline',
-                        )}
-                        aria-hidden
-                      />
-                    )}
-
-                    <span className="min-w-0 flex-1">
-                      <span className="label label-gold block">
-                        {date.weekday} · {date.day} {date.month}
-                      </span>
-                      {/* Two lines, not one: the part that tells a night
-                          apart is often at the end of its name. */}
-                      <span className="heading mt-1.5 line-clamp-2 block text-lg text-inherit">
-                        {event.name}
-                      </span>
-                      <span className="label mt-1 block normal-case tracking-normal">
-                        {doorHours(event)} · {event.age}+
-                      </span>
-                    </span>
-
+                    <NightPoster event={event} dimmed={!selected && hasSelection} />
                     {selected && (
                       <span
                         aria-hidden
-                        className="h-2 w-2 shrink-0 rounded-full bg-gold"
+                        className="absolute top-2.5 right-2.5 h-2 w-2 rounded-full bg-gold shadow-[0_0_0_4px_rgba(7,8,9,0.55)]"
                       />
                     )}
                   </button>

@@ -109,11 +109,18 @@ export default async function HomePage() {
                 No nights on sale right now. Check back shortly.
               </p>
             ) : (
-              <div className="grid-hairline grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
+              <div className="grid-hairline grid-cols-2 xl:grid-cols-3">
                 {events.map((event, i) => (
                   <Reveal key={event._id} delay={i * 60}>
                     <EventCard event={event} fromPrice={fromPrice} />
                   </Reveal>
+                ))}
+                {/* The gap colour is the grid's own background, so an
+                    incomplete last row shows as a lighter hole over the
+                    ambience. Fill it, per breakpoint. */}
+                {events.length % 2 === 1 && <div aria-hidden className="xl:hidden" />}
+                {Array.from({ length: (3 - (events.length % 3)) % 3 }).map((_, i) => (
+                  <div key={`filler-${i}`} aria-hidden className="hidden xl:block" />
                 ))}
               </div>
             )}
