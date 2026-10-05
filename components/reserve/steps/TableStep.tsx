@@ -6,7 +6,7 @@ import { ZoneSwitch } from '../ZoneSwitch'
 import { PartyMix } from '../PartyMix'
 import { VENUE } from '@/content/venue'
 import { BreakdownLines } from '../Breakdown'
-import { priceFor } from '@/lib/pricing'
+import type { Breakdown } from '@/lib/pricing'
 import {
   isOnRequest,
   ratesFor,
@@ -28,6 +28,7 @@ export function TableStep({
   onTable,
   onRate,
   onParty,
+  quote,
   currency,
   nightLabel,
 }: {
@@ -42,6 +43,8 @@ export function TableStep({
   onTable: (table?: FvTable) => void
   onRate: (rate: FvTableRate) => void
   onParty: (party: Party) => void
+  /** What the venue will ask, read from the API for this party size. */
+  quote?: Breakdown
   currency: string
   /** Used to write the request a guest sends about a contact-only table. */
   nightLabel: string
@@ -224,16 +227,13 @@ export function TableStep({
               })()}
             </div>
           ) : (
-            (() => {
-                          const price = priceFor(rate, partySize)
-
-              return (
+            quote && (
                 <details className="group">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 bg-ink p-5 sm:p-6">
                     <span>
                       <span className="label label-gold block">Pay now</span>
                       <span className="figure mt-2 block text-2xl text-gold-lit">
-                        {formatMoney(price.payNow, currency, { cents: true })}
+                        {formatMoney(quote.payNow, currency, { cents: true })}
                       </span>
                     </span>
                     <span className="text-gold transition-transform duration-300 group-open:rotate-45">
@@ -243,13 +243,12 @@ export function TableStep({
 
                   <div className="border-t border-hairline-soft p-5 sm:p-6">
                     <BreakdownLines
-                      price={price}
+                      price={quote}
                       currency={currency}
                     />
                   </div>
                 </details>
               )
-            })()
           )}
 
           {rate.content && (

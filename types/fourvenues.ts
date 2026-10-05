@@ -66,6 +66,13 @@ export interface FvTableRate {
   max_clients: number
   price: number
   included_persons: number
+  /**
+   * The minimum spend with no guests added on, merged in from
+   * `/bookings/zones`. `price` on an availability response is the figure for
+   * the `quantity` that response was read at, so it is not comparable between
+   * reads; this one is.
+   */
+  base_price?: number
   supplement_persons: number
   supplement_price: number
   fee_type: string

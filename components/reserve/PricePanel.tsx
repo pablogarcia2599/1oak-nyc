@@ -3,7 +3,7 @@
 import { partyTotal } from '@/lib/party'
 import type { Selection } from './types'
 import { BreakdownLines } from './Breakdown'
-import { priceFor } from '@/lib/pricing'
+import type { Breakdown } from '@/lib/pricing'
 import { ADDITIONAL_CHARGES } from '@/content/venue'
 import { doorTime, formatMoney, nightDate } from '@/lib/utils'
 
@@ -15,19 +15,24 @@ import { doorTime, formatMoney, nightDate } from '@/lib/utils'
  */
 export function PricePanel({
   selection,
+  quote,
   currency,
   error,
 }: {
   selection: Selection
+  /** What the venue will ask, read from the API for this party size. */
+  quote?: Breakdown
   currency: string
   error?: string
 }) {
   const { event, zone, table, rate } = selection
   const partySize = partyTotal(selection.party)
-  if (!event || !zone || !rate) return null
+  if (!event || !zone || !rate || !quote) return null
+
+  const price = quote
 
   const date = nightDate(event)
-  const price = priceFor(rate, partySize)
+
 
   return (
     <div>

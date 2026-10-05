@@ -3,20 +3,22 @@
 import { partyTotal } from '@/lib/party'
 import type { Selection } from './types'
 import { isOnRequest } from '@/lib/floorplan'
-import { priceFor } from '@/lib/pricing'
+import type { Breakdown } from '@/lib/pricing'
 import { formatMoney, nightDate } from '@/lib/utils'
 
 /** Shared by the desktop rail and the mobile drawer. */
 export function SummaryContent({
   selection,
+  quote,
   currency,
 }: {
   selection: Selection
+  quote?: Breakdown
   currency: string
 }) {
   const date = selection.event ? nightDate(selection.event) : undefined
   const rate = selection.rate
-  const price = rate ? priceFor(rate, partyTotal(selection.party)) : undefined
+  const price = quote
 
   return (
     <>

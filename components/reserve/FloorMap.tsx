@@ -193,7 +193,7 @@ export function FloorMap({
                 aria-pressed={selected}
                 aria-label={`Table ${table.name}${
                   rate
-                    ? `, ${rate.name}, ${isOnRequest(rate) ? 'on request' : formatMoney(rate.price, currency)}`
+                    ? `, ${rate.name}, ${isOnRequest(rate) ? 'on request' : formatMoney(rate.base_price ?? rate.price, currency)}`
                     : ''
                 }, ${table.minimum} to ${seats} guests${reason ? `, ${reason}` : ''}`}
                 style={{
@@ -251,10 +251,10 @@ export function FloorMap({
                   ) : (
                     <>
                       <span className="figure sm:hidden">
-                        {compactMoney(rate.price, currency)}
+                        {compactMoney(rate.base_price ?? rate.price, currency)}
                       </span>
                       <span className="figure hidden sm:inline">
-                        {formatMoney(rate.price, currency)}
+                        {formatMoney(rate.base_price ?? rate.price, currency)}
                       </span>
                       <span className="text-gold">+</span>
                     </>
@@ -282,7 +282,9 @@ export function FloorMap({
                     {rate.name}
                     <span className="mx-1.5 text-faint">·</span>
                     <span className="text-gold-lit">
-                      {isOnRequest(rate) ? 'On request' : formatMoney(rate.price, currency)}
+                      {isOnRequest(rate)
+                        ? 'On request'
+                        : formatMoney(rate.base_price ?? rate.price, currency)}
                     </span>
                   </span>
                 </span>

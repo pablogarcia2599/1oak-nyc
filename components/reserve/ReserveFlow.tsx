@@ -12,7 +12,7 @@ import { SummaryContent } from './Summary'
 import { EMPTY_GUEST, STEPS, depositFor, type GuestDetails, type Selection } from './types'
 import { catalogueQuantity, isOnRequest, ratesFor, tableSeats } from '@/lib/floorplan'
 import { clampParty, maxMen, partyNote, partyTotal, type Party } from '@/lib/party'
-import { priceFor, supplementsFor } from '@/lib/pricing'
+import { extraGuestsFor, priceBreakdown } from '@/lib/pricing'
 import { cn, formatMoney, nightDate } from '@/lib/utils'
 
 export function ReserveFlow({
@@ -40,6 +40,12 @@ export function ReserveFlow({
     // start higher.
     party: { men: 4, women: 4 },
   })
+  // What the venue will ask for this table at this party size. Read from the
+  // API rather than worked out here: `supplement_price` does not describe the
+  // whole curve — one table steps by 2,000 a head and then by 4,000 for the
+  // last — and a price we invent is a price we get wrong.
+  const [quotedTotal, setQuotedTotal] = useState<number>()
+
   // The party size the floor is read at — not the guest's party, which is
   // counted against the table once there is one.
   const [floorQuantity, setFloorQuantity] = useState(1)
@@ -131,6 +137,60 @@ export function ReserveFlow({
       clearTimeout(timer)
     }
   }, [selection.event, floorQuantity])
+
+  // ─── The quote ────────────────────────────────────────────────────────────
+  // Availability prices a rate for the quantity it is read at, so the figure
+  // for this party comes from a read of its own. The floor is left alone, so
+  // the plan does not redraw while the guests are counted.
+  const tableId = selection.table?._id
+  const rateId = selection.rate?._id
+  useEffect(() => {
+    const event = selection.event
+    if (!event || !tableId || !rateId) {
+      setQuotedTotal(undefined)
+      return
+    }
+
+    let cancelled = false
+    const controller = new AbortController()
+    const timer = setTimeout(() => {
+      fetch(
+        `/api/availability?event_id=${encodeURIComponent(event._id)}&quantity=${partySize}`,
+        { signal: controller.signal },
+      )
+        .then(res => res.json())
+        .then(json => {
+          if (cancelled || !json?.success) return
+          const zones = json.data as FvZone[]
+          const table = zones
+            .flatMap(z => z.spaces ?? [])
+            .find(s => s._id === tableId)
+          const rate = (table?.rates ?? []).find(r => r._id === rateId)
+          if (rate) setQuotedTotal(rate.price)
+        })
+        .catch(() => {
+          // The previous quote stands, and the payment page is the authority.
+        })
+    }, 250)
+
+    return () => {
+      cancelled = true
+      controller.abort()
+      clearTimeout(timer)
+    }
+  }, [selection.event, tableId, rateId, partySize])
+
+  const basePrice = selection.rate
+    ? (selection.rate.base_price ?? selection.rate.price)
+    : undefined
+  const quote =
+    basePrice === undefined
+      ? undefined
+      : priceBreakdown(
+          basePrice,
+          Math.max(0, (quotedTotal ?? basePrice) - basePrice),
+          extraGuestsFor(selection.rate!, partySize),
+        )
 
   // ─── Navigation ───────────────────────────────────────────────────────────
   /**
@@ -231,8 +291,8 @@ export function ReserveFlow({
         table_id: table?._id,
         normalized_table_name: table?.normalized_name,
         quantity: partySize,
-        minimum_spend: rate.price,
-        supplements: supplementsFor(rate, partySize),
+        minimum_spend: rate.base_price ?? rate.price,
+        supplements: Math.max(0, (quotedTotal ?? rate.base_price ?? rate.price) - (rate.base_price ?? rate.price)),
         full_name: guest.full_name.trim(),
         email: guest.email.trim(),
         phone: guest.phone.trim(),
@@ -333,6 +393,7 @@ export function ReserveFlow({
               }
               onRate={(rate: FvTableRate) => setSelection(prev => ({ ...prev, rate }))}
               onParty={(party: Party) => setSelection(prev => ({ ...prev, party }))}
+              quote={quote}
               nightLabel={nightLabel}
             />
           )}
@@ -348,7 +409,12 @@ export function ReserveFlow({
                   setFieldErrors({})
                 }}
               />
-              <PricePanel selection={selection} currency={currency} error={submitError} />
+              <PricePanel
+                selection={selection}
+                quote={quote}
+                currency={currency}
+                error={submitError}
+              />
             </div>
           )}
 
@@ -405,7 +471,7 @@ export function ReserveFlow({
               <span className="text-gold">+</span>
             </summary>
             <div className="border-t border-hairline-soft px-5 pb-6 pt-5">
-              <SummaryContent selection={selection} currency={currency} />
+              <SummaryContent selection={selection} quote={quote} currency={currency} />
             </div>
           </details>
         </div>
@@ -414,7 +480,7 @@ export function ReserveFlow({
           <div className="material-lg p-6">
             <p className="label label-gold">Your reservation</p>
             <div className="mt-6">
-              <SummaryContent selection={selection} currency={currency} />
+              <SummaryContent selection={selection} quote={quote} currency={currency} />
             </div>
           </div>
         </aside>
@@ -462,9 +528,7 @@ export function ReserveFlow({
                   'On request'
                 ) : (
                   <>
-                    {formatMoney(priceFor(selection.rate, partySize).payNow, currency, {
-                      cents: true,
-                    })}{' '}
+                    {formatMoney(quote?.payNow ?? 0, currency, { cents: true })}{' '}
                     <span className="text-faint">now</span>
                   </>
                 )}

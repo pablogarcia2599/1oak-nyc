@@ -21,13 +21,25 @@ import type {
  * unavailable — which is how the home page reads the room list.
  */
 /**
- * Contact numbers for the rates the venue handles by hand, keyed by rate id.
+ * What `/bookings/availability` leaves out, keyed by rate id.
  *
- * `/bookings/availability` knows a rate is contact-only but not who to
- * contact; `/bookings/zones` carries the number. Neither endpoint has both.
+ * Two things, and `/bookings/zones` is the only place either lives:
+ *
+ *  - The contact number for the rates the venue handles by hand. Availability
+ *    knows a rate is contact-only but not who to contact.
+ *  - The minimum spend with nobody added on. `price` on an availability
+ *    response is the figure for the `quantity` it was read at — a table that
+ *    includes four quotes 10,000 at a party of four and 20,000 at a party of
+ *    eight — so it cannot be shown as "the price of this table". This
+ *    endpoint takes no quantity and answers with the base.
  */
-async function whatsappNumbers(eventId: string): Promise<Map<string, string>> {
-  const numbers = new Map<string, string>()
+interface RateExtras {
+  whatsapp?: string
+  basePrice?: number
+}
+
+async function rateExtras(eventId: string): Promise<Map<string, RateExtras>> {
+  const extras = new Map<string, RateExtras>()
   try {
     const res = await fvFetch<FvResponse<FvZone[]>>('/bookings/zones', {
       params: { event_id: eventId },
@@ -36,17 +48,19 @@ async function whatsappNumbers(eventId: string): Promise<Map<string, string>> {
     for (const zone of res.data ?? []) {
       for (const table of zone.spaces ?? []) {
         for (const rate of table.rates ?? []) {
-          if (rate.whatsapp_contact_phone_number) {
-            numbers.set(rate._id, rate.whatsapp_contact_phone_number)
-          }
+          extras.set(rate._id, {
+            whatsapp: rate.whatsapp_contact_phone_number,
+            basePrice: rate.price,
+          })
         }
       }
     }
   } catch (error) {
-    // A missing number only costs the request button, never the floor.
-    console.error('[whatsappNumbers]', error)
+    // Losing this costs the request button and leaves the quantity-adjusted
+    // price in place; it must never cost the floor.
+    console.error('[rateExtras]', error)
   }
-  return numbers
+  return extras
 }
 
 export async function getAvailability(eventId: string, quantity = 1): Promise<FvZone[]> {
@@ -65,12 +79,12 @@ export async function getAvailability(eventId: string, quantity = 1): Promise<Fv
     })
   }
 
-  const [res, numbers] = await Promise.all([
+  const [res, extras] = await Promise.all([
     fvFetch<FvResponse<FvZone[]>>('/bookings/availability', {
       params: { event_id: eventId, quantity },
       cache: 'no-store',
     }),
-    whatsappNumbers(eventId),
+    rateExtras(eventId),
   ])
 
   // Full zones are kept: the UI explains *why* nothing is bookable (usually the
@@ -79,11 +93,16 @@ export async function getAvailability(eventId: string, quantity = 1): Promise<Fv
     ...zone,
     spaces: (zone.spaces ?? []).map(table => ({
       ...table,
-      rates: (table.rates ?? []).map(rate =>
-        numbers.has(rate._id)
-          ? { ...rate, whatsapp_contact_phone_number: numbers.get(rate._id) }
-          : rate,
-      ),
+      rates: (table.rates ?? []).map(rate => {
+        const extra = extras.get(rate._id)
+        if (!extra) return rate
+        return {
+          ...rate,
+          whatsapp_contact_phone_number:
+            extra.whatsapp ?? rate.whatsapp_contact_phone_number,
+          base_price: extra.basePrice,
+        }
+      }),
     })),
   }))
 }
