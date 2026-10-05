@@ -4,6 +4,7 @@ import type { FvTable, FvTableRate, FvZone } from '@/types/fourvenues'
 import { FloorMap } from '../FloorMap'
 import { ZoneSwitch } from '../ZoneSwitch'
 import { PartyMix } from '../PartyMix'
+import { DisclosureMark } from '../DisclosureMark'
 import { VENUE } from '@/content/venue'
 import { BreakdownLines } from '../Breakdown'
 import type { Breakdown } from '@/lib/pricing'
@@ -236,9 +237,7 @@ export function TableStep({
                         {formatMoney(quote.payNow, currency, { cents: true })}
                       </span>
                     </span>
-                    <span className="text-gold transition-transform duration-300 group-open:rotate-45">
-                      +
-                    </span>
+                    <DisclosureMark label="Details" />
                   </summary>
 
                   <div className="border-t border-hairline-soft p-5 sm:p-6">

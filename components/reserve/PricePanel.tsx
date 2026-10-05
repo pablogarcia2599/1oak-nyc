@@ -3,6 +3,7 @@
 import { partyTotal } from '@/lib/party'
 import type { Selection } from './types'
 import { BreakdownLines } from './Breakdown'
+import { DisclosureMark } from './DisclosureMark'
 import type { Breakdown } from '@/lib/pricing'
 import { ADDITIONAL_CHARGES } from '@/content/venue'
 import { doorTime, formatMoney, nightDate } from '@/lib/utils'
@@ -54,9 +55,7 @@ export function PricePanel({
         <details className="group border-t border-hairline-soft">
           <summary className="label flex cursor-pointer list-none items-center justify-between px-6 py-4">
             View breakdown
-            <span className="text-gold transition-transform duration-300 group-open:rotate-45">
-              +
-            </span>
+            <DisclosureMark />
           </summary>
           <div className="px-6 pb-6">
             <BreakdownLines

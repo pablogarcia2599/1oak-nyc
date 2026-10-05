@@ -9,6 +9,7 @@ import { TableStep } from './steps/TableStep'
 import { GuestStep } from './steps/GuestStep'
 import { PricePanel } from './PricePanel'
 import { SummaryContent } from './Summary'
+import { DisclosureMark } from './DisclosureMark'
 import { EMPTY_GUEST, STEPS, depositFor, type GuestDetails, type Selection } from './types'
 import { catalogueQuantity, isOnRequest, ratesFor, tableSeats } from '@/lib/floorplan'
 import { clampParty, maxMen, partyNote, partyTotal, type Party } from '@/lib/party'
@@ -465,10 +466,10 @@ export function ReserveFlow({
           </div>
 
           {/* Mobile summary: in flow, collapsed, so the bar stays one line. */}
-          <details className="material-lg mt-12 overflow-hidden lg:hidden">
+          <details className="material-lg group mt-12 overflow-hidden lg:hidden">
             <summary className="label flex cursor-pointer list-none items-center justify-between p-5">
               Your reservation
-              <span className="text-gold">+</span>
+              <DisclosureMark />
             </summary>
             <div className="border-t border-hairline-soft px-5 pb-6 pt-5">
               <SummaryContent selection={selection} quote={quote} currency={currency} />
