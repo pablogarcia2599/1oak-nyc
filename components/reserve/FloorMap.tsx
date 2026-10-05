@@ -20,6 +20,31 @@ import { cn, formatMoney } from '@/lib/utils'
  * near the top get the pill underneath them, and tables near either edge get
  * it nudged inwards.
  */
+/**
+ * The price a tag carries on a phone, where twenty-three of them share 335px
+ * of plan. Round thousands lose their zeroes; anything else keeps its figure,
+ * because rounding a price is not an abbreviation.
+ */
+function compactMoney(amount: number, currency: string): string {
+  if (amount >= 1000 && amount % 1000 === 0) {
+    return `${formatMoney(amount / 1000, currency)}K`
+  }
+  return formatMoney(amount, currency)
+}
+
+/**
+ * Where a table's price tag sits: on the side of the marker that faces the
+ * middle of the room, which is where the floor is empty. Hung above or below
+ * instead, the tags on a stack of tables along one wall would land on each
+ * other.
+ */
+function tagPlacement(left: number) {
+  const toTheRight = left < 50
+  return toTheRight
+    ? { transform: 'translateY(-50%)', marginLeft: '0.4rem' }
+    : { transform: 'translate(-100%, -50%)', marginLeft: '-0.4rem' }
+}
+
 function pillPlacement(left: number, top: number) {
   const x = left < 24 ? '-12%' : left > 76 ? '-88%' : '-50%'
   const below = top < 18
@@ -207,6 +232,33 @@ export function FloorMap({
                   className="glass pointer-events-none absolute z-20 -translate-x-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border border-hairline px-1.5 py-0.5 text-[0.5rem] font-medium uppercase leading-none tracking-[0.1em] text-mute"
                 >
                   Sold
+                </span>
+              )}
+
+              {/* The minimum spend, on the table it belongs to. The plus is
+                  the site's shorthand for a floor rather than a fixed price:
+                  this is what the table starts at. */}
+              {!soldOut && rate && !selected && (
+                <span
+                  aria-hidden
+                  style={{ left: `${left}%`, top: `${top}%`, ...tagPlacement(left) }}
+                  className="glass pointer-events-none absolute z-10 whitespace-nowrap rounded-full border border-hairline px-1 py-0.5 text-[0.5rem] leading-none text-bone sm:px-1.5 sm:py-1 sm:text-[0.625rem]"
+                >
+                  {isOnRequest(rate) ? (
+                    // Short enough to clear the tag of the table across the
+                    // room from it; the panel below says it in full.
+                    <span className="text-mute">Request</span>
+                  ) : (
+                    <>
+                      <span className="figure sm:hidden">
+                        {compactMoney(rate.price, currency)}
+                      </span>
+                      <span className="figure hidden sm:inline">
+                        {formatMoney(rate.price, currency)}
+                      </span>
+                      <span className="text-gold">+</span>
+                    </>
+                  )}
                 </span>
               )}
 
