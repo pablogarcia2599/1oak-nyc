@@ -7,7 +7,15 @@ import { PartyMix } from '../PartyMix'
 import { VENUE } from '@/content/venue'
 import { BreakdownLines } from '../Breakdown'
 import { priceBreakdown } from '@/lib/pricing'
-import { isOnRequest, partyBounds, rateColor, ratesFor, roomsFrom, whatsappLink } from '@/lib/floorplan'
+import {
+  isOnRequest,
+  partyBounds,
+  rateColor,
+  ratesFor,
+  roomsFrom,
+  tableSeats,
+  whatsappLink,
+} from '@/lib/floorplan'
 import { cn, formatMoney } from '@/lib/utils'
 import { clampParty, maxMen, partyTotal, type Party } from '@/lib/party'
 
@@ -60,7 +68,7 @@ export function TableStep({
     table && bounds
       ? {
           min: Math.max(bounds.min, table.minimum),
-          max: Math.max(Math.min(bounds.max, table.capacity), bounds.min),
+          max: Math.max(Math.min(bounds.max, tableSeats(table, zone)), bounds.min),
         }
       : bounds
 
@@ -228,7 +236,7 @@ export function TableStep({
                 Table {table.name} · {rate.name}
               </p>
               <p className="label mt-2">
-                {table.minimum}–{table.capacity} guests · {rate.included_persons} included
+                {table.minimum}–{tableSeats(table, zone)} guests · {rate.included_persons} included
               </p>
             </div>
             <button type="button" onClick={() => onTable(undefined)} className="btn btn-plain shrink-0">

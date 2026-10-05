@@ -1,7 +1,7 @@
 import 'server-only'
 import { fvFetch, isMockMode } from './client'
 import { MOCK_ZONES } from './mock'
-import { roomsFrom } from '@/lib/floorplan'
+import { roomsFrom, tableSeats } from '@/lib/floorplan'
 import type {
   FvBookingCheckoutRequest,
   FvBookingCheckoutResponse,
@@ -56,7 +56,10 @@ export async function getAvailability(eventId: string, quantity = 1): Promise<Fv
     return MOCK_ZONES.map(zone => {
       const spaces = zone.spaces.map(space => ({
         ...space,
-        available: space.available && space.capacity >= quantity && space.minimum <= quantity,
+        available:
+          space.available &&
+          tableSeats(space, zone) >= quantity &&
+          space.minimum <= quantity,
       }))
       return { ...zone, spaces, is_full: spaces.every(s => !s.available) }
     })

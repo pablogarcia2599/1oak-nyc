@@ -11,6 +11,7 @@ import {
   rateColor,
   ratesFor,
   spreadPosition,
+  tableSeats,
 } from '@/lib/floorplan'
 import { cn, formatMoney } from '@/lib/utils'
 
@@ -155,7 +156,8 @@ export function FloorMap({
           // `available: false` covers two different things. A table the party
           // does not fit is still for sale on another night; only a blocked
           // one, or one the party fits that has gone, is actually sold.
-          const fitsParty = partySize >= table.minimum && partySize <= table.capacity
+          const seats = tableSeats(table, zone)
+          const fitsParty = partySize >= table.minimum && partySize <= seats
           const soldOut = table.blocked || (!table.available && fitsParty)
 
           const reason = soldOut
@@ -163,8 +165,8 @@ export function FloorMap({
             : !bookable
               ? partySize < table.minimum
                 ? `minimum ${table.minimum} guests`
-                : partySize > table.capacity
-                  ? `seats ${table.capacity}`
+                : partySize > seats
+                  ? `seats ${seats}`
                   : 'unavailable'
               : undefined
 
@@ -180,7 +182,7 @@ export function FloorMap({
                   rate
                     ? `, ${rate.name}, ${isOnRequest(rate) ? 'on request' : formatMoney(rate.price, currency)}`
                     : ''
-                }, ${table.minimum} to ${table.capacity} guests${reason ? `, ${reason}` : ''}`}
+                }, ${table.minimum} to ${seats} guests${reason ? `, ${reason}` : ''}`}
                 style={{
                   left: `${left}%`,
                   top: `${top}%`,

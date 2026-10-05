@@ -237,14 +237,14 @@ export function roomsFrom(zones: FvZone[]): Room[] {
           existing.tableCount += 1
           if (table.available) existing.availableCount += 1
           existing.minGuests = Math.min(existing.minGuests, table.minimum || 1)
-          existing.maxGuests = Math.max(existing.maxGuests, table.capacity)
+          existing.maxGuests = Math.max(existing.maxGuests, tableSeats(table, zone))
         } else {
           byRate.set(rate._id, {
             rate,
             tableCount: 1,
             availableCount: table.available ? 1 : 0,
             minGuests: table.minimum || 1,
-            maxGuests: table.capacity,
+            maxGuests: tableSeats(table, zone),
           })
         }
       }
@@ -254,12 +254,28 @@ export function roomsFrom(zones: FvZone[]): Room[] {
   return [...byRate.values()].sort((a, b) => a.rate.price - b.rate.price)
 }
 
+/**
+ * How many guests a table can actually be sold to.
+ *
+ * `capacity` is the venue's seating figure, and it is not what the rate will
+ * take. Several tables are entered as 15 while their rate sells
+ * `included_persons` plus `supplement_persons` — as few as seven. A booking
+ * can only honour the smaller of the two, so that is the number the site
+ * counts to.
+ */
+export function tableSeats(table: FvTable, zone?: FvZone): number {
+  const rate = ratesFor(table, zone)[0]
+  if (!rate) return table.capacity
+  const sellable = rate.included_persons + rate.supplement_persons
+  return Math.max(table.minimum || 1, Math.min(table.capacity, sellable))
+}
+
 /** Party-size bounds the venue actually accepts, across every table on sale. */
 export function partyBounds(zones: FvZone[]): { min: number; max: number } {
-  const tables = zones.flatMap(z => z.spaces ?? []).filter(t => !t.hidden)
+  const tables = zones.flatMap(z => (z.spaces ?? []).filter(t => !t.hidden).map(t => [t, z] as const))
   if (tables.length === 0) return { min: 1, max: 30 }
   return {
-    min: Math.min(...tables.map(t => t.minimum || 1)),
-    max: Math.max(...tables.map(t => t.capacity)),
+    min: Math.min(...tables.map(([t]) => t.minimum || 1)),
+    max: Math.max(...tables.map(([t, z]) => tableSeats(t, z))),
   }
 }
