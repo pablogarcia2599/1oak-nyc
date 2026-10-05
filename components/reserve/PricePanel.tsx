@@ -1,5 +1,6 @@
 'use client'
 
+import { partyTotal } from '@/lib/party'
 import type { Selection } from './types'
 import { BreakdownLines } from './Breakdown'
 import { priceBreakdown } from '@/lib/pricing'
@@ -21,7 +22,8 @@ export function PricePanel({
   currency: string
   error?: string
 }) {
-  const { event, zone, table, rate, partySize } = selection
+  const { event, zone, table, rate } = selection
+  const partySize = partyTotal(selection.party)
   if (!event || !zone || !rate) return null
 
   const date = nightDate(event)

@@ -1,5 +1,6 @@
 'use client'
 
+import { partyTotal } from '@/lib/party'
 import type { Selection } from './types'
 import { isOnRequest } from '@/lib/floorplan'
 import { priceBreakdown } from '@/lib/pricing'
@@ -22,7 +23,8 @@ export function SummaryContent({
       <dl className="space-y-4">
         {[
           ['Night', date ? `${date.weekdayLong} ${date.day} ${date.month}` : '—'],
-          ['Party', `${selection.partySize} guests`],
+          ['Party', `${partyTotal(selection.party)} guests`],
+          ['Mix', `${selection.party.men} men · ${selection.party.women} women`],
           ['Table', selection.table ? `Table ${selection.table.name}` : '—'],
           ['Zone', rate?.name ?? '—'],
         ].map(([label, value]) => (

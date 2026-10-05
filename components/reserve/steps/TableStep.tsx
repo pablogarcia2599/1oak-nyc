@@ -3,25 +3,26 @@
 import type { FvTable, FvTableRate, FvZone } from '@/types/fourvenues'
 import { FloorMap } from '../FloorMap'
 import { ZoneSwitch } from '../ZoneSwitch'
-import { PartySize } from '../PartySize'
+import { PartyMix } from '../PartyMix'
 import { VENUE } from '@/content/venue'
 import { BreakdownLines } from '../Breakdown'
 import { priceBreakdown } from '@/lib/pricing'
 import { isOnRequest, partyBounds, rateColor, ratesFor, roomsFrom, whatsappLink } from '@/lib/floorplan'
 import { cn, formatMoney } from '@/lib/utils'
+import { clampParty, maxMen, partyTotal, type Party } from '@/lib/party'
 
 export function TableStep({
   zones,
   loading,
   error,
-  partySize,
+  party,
   zone,
   table,
   rate,
   onZone,
   onTable,
   onRate,
-  onPartySize,
+  onParty,
   bounds,
   currency,
   nightLabel,
@@ -29,14 +30,14 @@ export function TableStep({
   zones: FvZone[]
   loading: boolean
   error?: string
-  partySize: number
+  party: Party
   zone?: FvZone
   table?: FvTable
   rate?: FvTableRate
   onZone: (zone: FvZone) => void
   onTable: (table?: FvTable) => void
   onRate: (rate: FvTableRate) => void
-  onPartySize: (n: number) => void
+  onParty: (party: Party) => void
   /** What the venue as a whole takes — not the room on screen, so that a
       party which only fits the other room can still be dialled in. */
   bounds: { min: number; max: number } | null
@@ -49,11 +50,19 @@ export function TableStep({
   // the loading state took it off screen mid-tap: one press, then nothing to
   // press. The party size lives with the floor it filters, so it stays put
   // while the floor redraws.
+  const partySize = partyTotal(party)
+  const selectedRate = rate ?? (table ? ratesFor(table, zone)[0] : undefined)
+
   const header = (
     <div>
       <h2 className="heading heading-lg text-bone">Pick your table</h2>
       <div className="mt-8">
-        <PartySize value={partySize} bounds={bounds} onChange={onPartySize} />
+        <PartyMix
+          party={party}
+          bounds={bounds}
+          included={selectedRate?.included_persons}
+          onChange={onParty}
+        />
       </div>
     </div>
   )
@@ -94,6 +103,8 @@ export function TableStep({
     z => z._id !== zone?._id && (z.spaces ?? []).some(space => space.available),
   )
   const selectedRateId = table ? ratesFor(table, zone)[0]?._id : undefined
+  const allowedMen = maxMen(partySize, selectedRate?.included_persons)
+  const menOverAllowance = party.men - allowedMen
 
   const selectTable = (t: FvTable) => {
     onTable(t)
@@ -139,7 +150,12 @@ export function TableStep({
               <button
                 type="button"
                 onClick={() =>
-                  onPartySize(partySize < zoneBounds.min ? zoneBounds.min : zoneBounds.max)
+                  onParty(
+                    clampParty(party, {
+                      min: zoneBounds.min,
+                      max: zoneBounds.max,
+                    }),
+                  )
                 }
                 className="btn btn-quiet w-full sm:w-auto"
               >
@@ -165,6 +181,29 @@ export function TableStep({
       )}
 
       {/* What you just tapped, spelled out. */}
+      {/* The party was composed before a table was chosen, so this table's
+          included headcount can turn out to be the stricter limit. Say so
+          where the choice was made, with the correction one tap away. */}
+      {menOverAllowance > 0 && rate && (
+        <div className="material p-6">
+          <p className="text-[0.95rem] leading-relaxed text-bone">
+            This table includes{' '}
+            <span className="text-gold-lit">{rate.included_persons}</span> guests, and only one of
+            the extras may be a man. A party of {partySize} here takes at most{' '}
+            <span className="text-gold-lit">{allowedMen}</span>.
+          </p>
+          <button
+            type="button"
+            onClick={() =>
+              onParty({ men: allowedMen, women: partySize - allowedMen })
+            }
+            className="btn btn-primary mt-5 w-full sm:w-auto"
+          >
+            Set to {allowedMen} men · {partySize - allowedMen} women
+          </button>
+        </div>
+      )}
+
       {table && rate && (
         <div
           className="material-lg overflow-hidden"

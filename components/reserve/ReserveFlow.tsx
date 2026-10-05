@@ -11,6 +11,7 @@ import { PricePanel } from './PricePanel'
 import { SummaryContent } from './Summary'
 import { EMPTY_GUEST, STEPS, depositFor, type GuestDetails, type Selection } from './types'
 import { isOnRequest, partyBounds, ratesFor } from '@/lib/floorplan'
+import { clampParty, maxMen, partyNote, partyTotal, type Party } from '@/lib/party'
 import { priceBreakdown } from '@/lib/pricing'
 import { cn, formatMoney, nightDate } from '@/lib/utils'
 
@@ -34,9 +35,10 @@ export function ReserveFlow({
   const [selection, setSelection] = useState<Selection>({
     event: initialEvent,
     // The party most tables here are sized for, so the floor opens with
-    // something on it. The snap below still corrects it for a venue whose
-    // tables start higher.
-    partySize: 8,
+    // something on it, and split evenly because the venue's rule is one man
+    // per woman. The snap below still corrects it for a venue whose tables
+    // start higher.
+    party: { men: 4, women: 4 },
   })
   const [bounds, setBounds] = useState<{ min: number; max: number } | null>(null)
   const [guest, setGuest] = useState<GuestDetails>(EMPTY_GUEST)
@@ -56,6 +58,7 @@ export function ReserveFlow({
   // double-invokes updaters in development, which swallowed the snap.
   const [snappedEvent, setSnappedEvent] = useState<string>()
   const currency = selection.event?.currency ?? 'USD'
+  const partySize = partyTotal(selection.party)
 
   // ─── Availability ─────────────────────────────────────────────────────────
   // Re-read the floor whenever the night or the party size changes; a stale
@@ -71,7 +74,7 @@ export function ReserveFlow({
 
     const timer = setTimeout(() => {
       fetch(
-        `/api/availability?event_id=${encodeURIComponent(event._id)}&quantity=${selection.partySize}`,
+        `/api/availability?event_id=${encodeURIComponent(event._id)}&quantity=${partySize}`,
         { signal: controller.signal },
       )
         .then(async res => {
@@ -120,7 +123,7 @@ export function ReserveFlow({
       controller.abort()
       clearTimeout(timer)
     }
-  }, [selection.event, selection.partySize])
+  }, [selection.event, partySize])
 
   // Tables carry a minimum party size, and the default will not suit every
   // venue. Snap into range once per night — after that the guest owns the
@@ -129,11 +132,12 @@ export function ReserveFlow({
     const event = selection.event
     if (!bounds || !event || snappedEvent === event._id) return
     setSnappedEvent(event._id)
-    setSelection(prev =>
-      prev.partySize < bounds.min || prev.partySize > bounds.max
-        ? { ...prev, partySize: Math.min(Math.max(prev.partySize, bounds.min), bounds.max) }
-        : prev,
-    )
+    setSelection(prev => {
+      const party = clampParty(prev.party, bounds)
+      return party.men === prev.party.men && party.women === prev.party.women
+        ? prev
+        : { ...prev, party }
+    })
   }, [bounds, selection.event, snappedEvent])
 
   // ─── Navigation ───────────────────────────────────────────────────────────
@@ -187,10 +191,17 @@ export function ReserveFlow({
     selection.zone ?? zones.find(z => (z.spaces ?? []).some(s => s.available)) ?? zones[0]
 
   // A contact-only rate has no checkout to advance to.
+  // A party composed before a table was chosen can break that table's own
+  // limit on men, so the floor must not be left behind in that state.
+  const partyFitsRate =
+    !selection.rate || selection.party.men <= maxMen(partySize, selection.rate.included_persons)
+
   const canAdvance =
     step === 0
       ? Boolean(selection.event)
-      : Boolean(selection.zone && selection.rate) && !isOnRequest(selection.rate)
+      : Boolean(selection.zone && selection.rate) &&
+        !isOnRequest(selection.rate) &&
+        partyFitsRate
 
   const nightLabel = selection.event
     ? (() => {
@@ -205,7 +216,7 @@ export function ReserveFlow({
 
   // ─── Submit ───────────────────────────────────────────────────────────────
   function confirm() {
-    const { event, zone, rate, table, partySize } = selection
+    const { event, zone, rate, table } = selection
     if (!event || !zone || !rate) return
     if (!validateGuest()) {
       // Without this the button simply does nothing, which reads as broken.
@@ -228,7 +239,11 @@ export function ReserveFlow({
         email: guest.email.trim(),
         phone: guest.phone.trim(),
         birthdate: guest.birthdate || undefined,
-        observations_client: guest.observations_client || undefined,
+        // The venue reads this on the booking in FV Pro, so the mix leads and
+        // whatever the guest wrote follows it.
+        observations_client: [partyNote(selection.party), guest.observations_client.trim()]
+          .filter(Boolean)
+          .join(' — '),
         marketing_consent: guest.marketing_consent,
         discount_code: guest.discount_code || undefined,
       })
@@ -291,7 +306,7 @@ export function ReserveFlow({
               zones={zones}
               loading={loadingZones}
               error={zonesError}
-              partySize={selection.partySize}
+              party={selection.party}
               zone={activeZone}
               table={selection.table}
               rate={selection.rate}
@@ -303,7 +318,7 @@ export function ReserveFlow({
                 setSelection(prev => ({ ...prev, table, rate: undefined }))
               }
               onRate={(rate: FvTableRate) => setSelection(prev => ({ ...prev, rate }))}
-              onPartySize={(n: number) => setSelection(prev => ({ ...prev, partySize: n }))}
+              onParty={(party: Party) => setSelection(prev => ({ ...prev, party }))}
               bounds={bounds}
               nightLabel={nightLabel}
             />
@@ -425,8 +440,8 @@ export function ReserveFlow({
           <div className="min-w-0 flex-1">
             <p className="label truncate">
               {selection.rate
-                ? `${selection.rate.name} · ${selection.partySize} guests`
-                : `${selection.partySize} guests`}
+                ? `${selection.rate.name} · ${partySize} guests`
+                : `${partySize} guests`}
             </p>
             {selection.rate && (
               <p className="truncate text-sm text-gold-lit">
