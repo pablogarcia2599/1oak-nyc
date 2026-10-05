@@ -29,7 +29,7 @@ function Section({
 }) {
   return (
     <section id={id} className="scroll-mt-20 border-t border-hairline-soft">
-      <div className="mx-auto grid max-w-7xl gutter gap-8 py-16 sm:py-24 lg:grid-cols-[9rem_1fr] lg:gap-16">
+      <div className="mx-auto grid max-w-7xl gutter gap-6 py-12 sm:gap-8 sm:py-24 lg:grid-cols-[9rem_1fr] lg:gap-16">
         <p className="label lg:sticky lg:top-28 lg:self-start">
           {index} — {title}
         </p>
@@ -67,7 +67,10 @@ export default async function HomePage() {
 
       <main>
         {/* ── Hero ───────────────────────────────────────────────────────── */}
-        <section className="flex min-h-svh flex-col items-center gutter justify-center pb-16 pt-28">
+        {/* Full height from sm up, a masthead below it. On a phone a screen
+            of its own is a scroll between arriving and the calendar, and the
+            address is already in the header. */}
+        <section className="flex flex-col items-center gutter justify-center pt-24 pb-10 sm:min-h-svh sm:pt-28 sm:pb-16">
           {/* The address is the mark, so it is the headline too. */}
           <Reveal>
             <h1>
@@ -76,12 +79,12 @@ export default async function HomePage() {
           </Reveal>
 
           <Reveal delay={160}>
-            <p className="label mt-8 sm:mt-10">
+            <p className="label mt-6 sm:mt-10">
               {VENUE.neighborhood} · {VENUE.city}
             </p>
           </Reveal>
 
-          <Reveal delay={300} className="mt-14 w-full max-w-xs sm:mt-16">
+          <Reveal delay={300} className="mt-9 w-full max-w-xs sm:mt-16">
             <Link href="/reserve" className="btn btn-primary w-full">
               Reserve a table
             </Link>
