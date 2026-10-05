@@ -5,7 +5,6 @@ import type { FvEvent, FvTable, FvTableRate, FvZone } from '@/types/fourvenues'
 import { submitBooking } from '@/app/reserve/actions'
 import { Stepper } from './Stepper'
 import { NightStep } from './steps/NightStep'
-import { PartySize } from './PartySize'
 import { TableStep } from './steps/TableStep'
 import { GuestStep } from './steps/GuestStep'
 import { PricePanel } from './PricePanel'
@@ -13,7 +12,7 @@ import { SummaryContent } from './Summary'
 import { EMPTY_GUEST, STEPS, depositFor, type GuestDetails, type Selection } from './types'
 import { isOnRequest, partyBounds, ratesFor } from '@/lib/floorplan'
 import { priceBreakdown } from '@/lib/pricing'
-import { formatMoney, nightDate } from '@/lib/utils'
+import { cn, formatMoney, nightDate } from '@/lib/utils'
 
 export function ReserveFlow({
   events,
@@ -27,7 +26,11 @@ export function ReserveFlow({
   const initialEvent =
     (initialEventSlug ? events.find(e => e.slug === initialEventSlug) : undefined) ?? events[0]
 
-  const [step, setStep] = useState(0)
+  // Arriving from a night on the home page, the first step has already been
+  // answered; opening on it would be the tap this flow just lost.
+  const [step, setStep] = useState(
+    initialEventSlug && events.some(e => e.slug === initialEventSlug) ? 1 : 0,
+  )
   const [selection, setSelection] = useState<Selection>({
     event: initialEvent,
     // The party most tables here are sized for, so the floor opens with
@@ -177,6 +180,12 @@ export function ReserveFlow({
     return Object.keys(errors).length === 0
   }
 
+  // The floor always opens on a room. `selection.zone` is what the guest
+  // picked; until they pick, this stands in, so no path through the flow can
+  // reach the plan with nothing to draw.
+  const activeZone =
+    selection.zone ?? zones.find(z => (z.spaces ?? []).some(s => s.available)) ?? zones[0]
+
   // A contact-only rate has no checkout to advance to.
   const canAdvance =
     step === 0
@@ -245,7 +254,11 @@ export function ReserveFlow({
   return (
     <div
       ref={topRef}
-      className="gutter mx-auto max-w-7xl scroll-mt-24 pb-36 lg:pb-0"
+      className={cn(
+        'gutter mx-auto max-w-7xl scroll-mt-24 lg:pb-0',
+        // Room for the fixed bar, on the steps that have one.
+        step === 0 ? 'pb-12' : 'pb-36',
+      )}
     >
       <Stepper steps={[...STEPS]} current={step} onJump={goTo} />
 
@@ -255,18 +268,21 @@ export function ReserveFlow({
             <NightStep
               events={events}
               selectedId={selection.event?._id}
-              onSelect={event =>
-                setSelection(prev => ({
-                  ...prev,
-                  event,
-                  zone: undefined,
-                  table: undefined,
-                  rate: undefined,
-                }))
-              }
-              partySize={selection.partySize}
-              bounds={bounds}
-              onPartySize={n => setSelection(prev => ({ ...prev, partySize: n }))}
+              onSelect={event => {
+                // Only a different night clears the floor. Re-tapping the one
+                // already chosen used to wipe the zone while leaving the
+                // availability effect untriggered — its dependency had not
+                // changed — so nothing put a zone back and the next step came
+                // up with no plan on it.
+                setSelection(prev =>
+                  prev.event?._id === event._id
+                    ? prev
+                    : { ...prev, event, zone: undefined, table: undefined, rate: undefined },
+                )
+                // Choosing the night is the whole of this step, so it is also
+                // the gesture that leaves it.
+                goTo(1)
+              }}
             />
           )}
 
@@ -276,7 +292,7 @@ export function ReserveFlow({
               loading={loadingZones}
               error={zonesError}
               partySize={selection.partySize}
-              zone={selection.zone}
+              zone={activeZone}
               table={selection.table}
               rate={selection.rate}
               currency={currency}
@@ -288,6 +304,7 @@ export function ReserveFlow({
               }
               onRate={(rate: FvTableRate) => setSelection(prev => ({ ...prev, rate }))}
               onPartySize={(n: number) => setSelection(prev => ({ ...prev, partySize: n }))}
+              bounds={bounds}
               nightLabel={nightLabel}
             />
           )}
@@ -315,7 +332,12 @@ export function ReserveFlow({
               follows it: reserving a slot to its left kept Continue from
               moving between steps but pushed it out of alignment with
               everything above it, which was the more visible fault. */}
-          <div className="mt-12 hidden items-center gap-3 border-t border-hairline-soft pt-8 lg:flex">
+          <div
+            className={cn(
+              'mt-12 hidden items-center gap-3 border-t border-hairline-soft pt-8',
+              step > 0 && 'lg:flex',
+            )}
+          >
             {step < STEPS.length - 1 ? (
               <button
                 type="button"
@@ -370,29 +392,22 @@ export function ReserveFlow({
         </aside>
       </div>
 
-      {/* Fixed action bar — phones only. */}
+      {/* Fixed action bar — phones only, and not on the night step, where a
+          tap on a night is itself the way forward. */}
       <div
-        className="glass fixed inset-x-0 bottom-0 z-40 border-t border-hairline-soft lg:hidden"
+        className={cn(
+          'glass fixed inset-x-0 bottom-0 z-40 border-t border-hairline-soft lg:hidden',
+          step === 0 && 'hidden',
+        )}
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        {/* On the first step the range lives here, above the row: the pill
-            shares that row with Continue and has no width to spare. */}
-        {step === 0 && bounds && (
-          <p className="gutter label pt-2.5 pb-0.5">
-            {bounds.min}–{bounds.max} guests per table
-          </p>
-        )}
-
-        <div className="gutter @container flex items-center gap-3 py-3.5">
+        <div className="gutter flex items-center gap-3 py-3.5">
           {/* A drawn chevron rather than an arrow glyph, and no chrome around
-              it: the bar already has one emphasis, and it is the gold button.
-              Not rendered on the first step rather than merely hidden — the
-              party pill needs the width it would hold. */}
-          {step > 0 && (
+              it: the bar already has one emphasis, and it is the gold button. */}
           <button
             type="button"
             onClick={() => goTo(Math.max(0, step - 1))}
-            disabled={pending}
+            disabled={step === 0 || pending}
             aria-label="Back"
             className="-ml-3 flex h-12 w-12 shrink-0 items-center justify-center text-mute transition-colors duration-200 hover:text-bone active:text-bone disabled:invisible"
           >
@@ -406,18 +421,7 @@ export function ReserveFlow({
               />
             </svg>
           </button>
-          )}
 
-          {step === 0 ? (
-            <div className="min-w-0 flex-1">
-              <PartySize
-                value={selection.partySize}
-                bounds={bounds}
-                onChange={n => setSelection(prev => ({ ...prev, partySize: n }))}
-                compact
-              />
-            </div>
-          ) : (
           <div className="min-w-0 flex-1">
             <p className="label truncate">
               {selection.rate
@@ -439,7 +443,6 @@ export function ReserveFlow({
               </p>
             )}
           </div>
-          )}
 
           {step < STEPS.length - 1 ? (
             <button

@@ -3,6 +3,7 @@
 import type { FvTable, FvTableRate, FvZone } from '@/types/fourvenues'
 import { FloorMap } from '../FloorMap'
 import { ZoneSwitch } from '../ZoneSwitch'
+import { PartySize } from '../PartySize'
 import { VENUE } from '@/content/venue'
 import { BreakdownLines } from '../Breakdown'
 import { priceBreakdown } from '@/lib/pricing'
@@ -21,6 +22,7 @@ export function TableStep({
   onTable,
   onRate,
   onPartySize,
+  bounds,
   currency,
   nightLabel,
 }: {
@@ -35,37 +37,50 @@ export function TableStep({
   onTable: (table?: FvTable) => void
   onRate: (rate: FvTableRate) => void
   onPartySize: (n: number) => void
+  /** What the venue as a whole takes — not the room on screen, so that a
+      party which only fits the other room can still be dialled in. */
+  bounds: { min: number; max: number } | null
   currency: string
   /** Used to write the request a guest sends about a contact-only table. */
   nightLabel: string
 }) {
-  const heading = <h2 className="heading heading-lg text-bone">Pick your table</h2>
+  // Heading and party size together, above every branch below. Changing the
+  // party size re-reads the floor, and when the control sat inside the body
+  // the loading state took it off screen mid-tap: one press, then nothing to
+  // press. The party size lives with the floor it filters, so it stays put
+  // while the floor redraws.
+  const header = (
+    <div>
+      <h2 className="heading heading-lg text-bone">Pick your table</h2>
+      <div className="mt-8">
+        <PartySize value={partySize} bounds={bounds} onChange={onPartySize} />
+      </div>
+    </div>
+  )
 
   if (loading) {
     return (
-      <div>
-        {heading}
-        <div className="material-lg mt-8 h-96 animate-pulse" />
+      <div className="space-y-8">
+        {header}
+        <div className="material-lg h-96 animate-pulse" />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div>
-        {heading}
-        <p className="material mt-8 p-6 text-sm leading-relaxed text-mute">{error}</p>
+      <div className="space-y-8">
+        {header}
+        <p className="material p-6 text-sm leading-relaxed text-mute">{error}</p>
       </div>
     )
   }
 
   if (zones.length === 0) {
     return (
-      <div>
-        {heading}
-        <p className="material mt-8 p-6 text-sm text-mute">
-          No tables are on sale for this night.
-        </p>
+      <div className="space-y-8">
+        {header}
+        <p className="material p-6 text-sm text-mute">No tables are on sale for this night.</p>
       </div>
     )
   }
@@ -93,10 +108,7 @@ export function TableStep({
 
   return (
     <div className="space-y-8">
-      <div>
-        {heading}
-
-      </div>
+      {header}
 
       {nothingFree && (
         <div className="material p-6">
