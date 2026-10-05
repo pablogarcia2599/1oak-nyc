@@ -14,11 +14,14 @@ import { blockedBy, partyTotal, type Party } from '@/lib/party'
 export function PartyMix({
   party,
   bounds,
+  forTable = false,
   included,
   onChange,
 }: {
   party: Party
+  /** The chosen table's range once there is one, else the venue's. */
   bounds: { min: number; max: number } | null
+  forTable?: boolean
   /** The selected rate's included headcount, once a table is chosen. */
   included?: number
   onChange: (party: Party) => void
@@ -103,7 +106,7 @@ export function PartyMix({
 
       <p className="label mt-3">
         {total} {total === 1 ? 'guest' : 'guests'}
-        {bounds && ` · ${min}–${max} per table`}
+        {bounds && (forTable ? ` · this table takes ${min}–${max}` : ` · ${min}–${max} per table`)}
       </p>
 
       {block === 'ratio' && (
@@ -117,7 +120,11 @@ export function PartyMix({
         </p>
       )}
       {block === 'size' && (
-        <p className="label mt-1.5 text-mute">The largest table takes {max}.</p>
+        <p className="label mt-1.5 text-gold-lit">
+          {forTable
+            ? `This table seats ${max}. Choose a larger one for more.`
+            : `The largest table seats ${max}.`}
+        </p>
       )}
     </div>
   )

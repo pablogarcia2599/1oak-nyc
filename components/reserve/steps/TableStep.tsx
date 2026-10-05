@@ -53,13 +53,25 @@ export function TableStep({
   const partySize = partyTotal(party)
   const selectedRate = rate ?? (table ? ratesFor(table, zone)[0] : undefined)
 
+  // Once a table is chosen it, not the venue, is the limit. Left on the
+  // venue-wide range a guest could count a party of twelve against a table
+  // that seats eight, which reads as asking for two tables.
+  const partyLimits =
+    table && bounds
+      ? {
+          min: Math.max(bounds.min, table.minimum),
+          max: Math.max(Math.min(bounds.max, table.capacity), bounds.min),
+        }
+      : bounds
+
   const header = (
     <div>
       <h2 className="heading heading-lg text-bone">Pick your table</h2>
       <div className="mt-8">
         <PartyMix
           party={party}
-          bounds={bounds}
+          bounds={partyLimits}
+          forTable={Boolean(table)}
           included={selectedRate?.included_persons}
           onChange={onParty}
         />
