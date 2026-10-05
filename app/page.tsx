@@ -93,8 +93,11 @@ export default async function HomePage() {
 
         {/* ── Nights ─────────────────────────────────────────────────────── */}
         <Section id="nights" index="01" title="The calendar">
-          <h2 className="heading heading-lg text-bone">Upcoming nights</h2>
-          <p className="prose-lede mt-5 max-w-lg">
+          {/* On a phone the margin note "01 — The calendar" already titles
+              the section, so the headline and its lede are another screen of
+              preamble before the thing itself. Still read aloud. */}
+          <h2 className="heading heading-lg sr-only text-bone sm:not-sr-only">Upcoming nights</h2>
+          <p className="prose-lede mt-5 hidden max-w-lg sm:block">
             Tables are released night by night. When a room is gone, it is gone.
           </p>
 
