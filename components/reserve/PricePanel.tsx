@@ -3,7 +3,7 @@
 import { partyTotal } from '@/lib/party'
 import type { Selection } from './types'
 import { BreakdownLines } from './Breakdown'
-import { extraGuestsFor, priceFor } from '@/lib/pricing'
+import { priceFor } from '@/lib/pricing'
 import { ADDITIONAL_CHARGES } from '@/content/venue'
 import { doorTime, formatMoney, nightDate } from '@/lib/utils'
 
@@ -27,7 +27,6 @@ export function PricePanel({
   if (!event || !zone || !rate) return null
 
   const date = nightDate(event)
-  const extraGuests = extraGuestsFor(rate, partySize)
   const price = priceFor(rate, partySize)
 
   return (
@@ -58,11 +57,6 @@ export function PricePanel({
             <BreakdownLines
               price={price}
               currency={currency}
-              note={
-                extraGuests > 0
-                  ? `Minimum includes ${extraGuests} additional ${extraGuests === 1 ? 'guest' : 'guests'}`
-                  : undefined
-              }
             />
           </div>
         </details>

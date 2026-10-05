@@ -51,18 +51,34 @@ export function priceFor(
   rate: { price: number; included_persons: number; supplement_price?: number },
   partySize: number,
 ): Breakdown {
-  return priceBreakdown(rate.price, supplementsFor(rate, partySize))
+  return priceBreakdown(rate.price, supplementsFor(rate, partySize), extraGuestsFor(rate, partySize))
 }
 
-export function priceBreakdown(minimumSpend: number, supplements = 0): Breakdown {
-  const base = cents(minimumSpend) + cents(supplements)
-  const processingFee = Math.round(base * PROCESSING_FEE_RATE)
+/**
+ * The guests above the rate's headcount raise the minimum spend, and they get
+ * a line of their own: folded into the minimum they looked like a table that
+ * had quietly changed price.
+ */
+export function priceBreakdown(
+  minimumSpend: number,
+  supplements = 0,
+  extraGuests = 0,
+): Breakdown {
+  const base = cents(minimumSpend)
+  const extra = cents(supplements)
+  const processingFee = Math.round((base + extra) * PROCESSING_FEE_RATE)
 
-  return {
-    payNow: money(base + processingFee),
-    now: [
-      { label: 'Minimum spend', amount: money(base) },
-      { label: 'Processing fee', amount: money(processingFee) },
-    ],
+  const now: PriceLine[] = [{ label: 'Minimum spend', amount: money(base) }]
+  if (extra > 0) {
+    now.push({
+      label:
+        extraGuests > 0
+          ? `${extraGuests} additional ${extraGuests === 1 ? 'guest' : 'guests'}`
+          : 'Additional guests',
+      amount: money(extra),
+    })
   }
+  now.push({ label: 'Processing fee', amount: money(processingFee) })
+
+  return { payNow: money(base + extra + processingFee), now }
 }

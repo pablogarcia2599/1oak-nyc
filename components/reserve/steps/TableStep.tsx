@@ -6,7 +6,7 @@ import { ZoneSwitch } from '../ZoneSwitch'
 import { PartyMix } from '../PartyMix'
 import { VENUE } from '@/content/venue'
 import { BreakdownLines } from '../Breakdown'
-import { extraGuestsFor, priceFor } from '@/lib/pricing'
+import { priceFor } from '@/lib/pricing'
 import {
   isOnRequest,
   rateColor,
@@ -231,8 +231,7 @@ export function TableStep({
             </div>
           ) : (
             (() => {
-              const extraGuests = extraGuestsFor(rate, partySize)
-              const price = priceFor(rate, partySize)
+                          const price = priceFor(rate, partySize)
 
               return (
                 <details className="group">
@@ -252,11 +251,6 @@ export function TableStep({
                     <BreakdownLines
                       price={price}
                       currency={currency}
-                      note={
-                        extraGuests > 0
-                          ? `Minimum includes ${extraGuests} additional ${extraGuests === 1 ? 'guest' : 'guests'}`
-                          : undefined
-                      }
                     />
                   </div>
                 </details>

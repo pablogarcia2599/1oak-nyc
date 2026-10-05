@@ -13,11 +13,9 @@ import { formatMoney } from '@/lib/utils'
 export function BreakdownLines({
   price,
   currency,
-  note,
 }: {
   price: Breakdown
   currency: string
-  note?: string
 }) {
   return (
     <div>
@@ -42,8 +40,6 @@ export function BreakdownLines({
       <p className="mt-5 border-t border-hairline-soft pt-4 text-xs leading-relaxed text-faint">
         {ADDITIONAL_CHARGES}
       </p>
-
-      {note && <p className="label pt-3">{note}</p>}
     </div>
   )
 }
