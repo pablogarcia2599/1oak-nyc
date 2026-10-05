@@ -7,9 +7,11 @@ import { blockedBy, partyTotal, type Party } from '@/lib/party'
  * Who is coming, counted separately.
  *
  * Built like `PhoneField`: one bordered surface with hairline dividers between
- * its cells. The rule is enforced on the buttons rather than checked later —
- * there is no way to reach a party the venue will not take — and the line
- * underneath says which limit stopped you the moment it does.
+ * its cells. The rules are enforced on the buttons rather than checked later,
+ * so there is no way to reach a party the venue will not take. The ratio one
+ * goes unannounced at the venue's request — the + simply stops — while the
+ * limits that come from the table are spelled out, since nothing else on
+ * screen would explain them.
  */
 export function PartyMix({
   party,
@@ -109,11 +111,6 @@ export function PartyMix({
         {bounds && (forTable ? ` · this table takes ${min}–${max}` : ` · ${min}–${max} per table`)}
       </p>
 
-      {block === 'ratio' && (
-        <p className="label mt-1.5 text-gold-lit">
-          One man for every woman — add a woman to add another man.
-        </p>
-      )}
       {block === 'extras' && included !== undefined && (
         <p className="label mt-1.5 text-gold-lit">
           This table includes {included}. Only one guest above that may be a man.
