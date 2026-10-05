@@ -12,7 +12,7 @@ import { SummaryContent } from './Summary'
 import { EMPTY_GUEST, STEPS, depositFor, type GuestDetails, type Selection } from './types'
 import { catalogueQuantity, isOnRequest, ratesFor, tableSeats } from '@/lib/floorplan'
 import { clampParty, maxMen, partyNote, partyTotal, type Party } from '@/lib/party'
-import { priceBreakdown } from '@/lib/pricing'
+import { priceFor, supplementsFor } from '@/lib/pricing'
 import { cn, formatMoney, nightDate } from '@/lib/utils'
 
 export function ReserveFlow({
@@ -232,6 +232,7 @@ export function ReserveFlow({
         normalized_table_name: table?.normalized_name,
         quantity: partySize,
         minimum_spend: rate.price,
+        supplements: supplementsFor(rate, partySize),
         full_name: guest.full_name.trim(),
         email: guest.email.trim(),
         phone: guest.phone.trim(),
@@ -461,7 +462,7 @@ export function ReserveFlow({
                   'On request'
                 ) : (
                   <>
-                    {formatMoney(priceBreakdown(selection.rate.price).payNow, currency, {
+                    {formatMoney(priceFor(selection.rate, partySize).payNow, currency, {
                       cents: true,
                     })}{' '}
                     <span className="text-faint">now</span>

@@ -31,6 +31,8 @@ const schema = z.object({
   discount_code: z.string().trim().max(40).optional(),
   /** The rate's minimum spend, so the server can check what it was shown. */
   minimum_spend: z.coerce.number().min(0).optional(),
+  /** What the guests beyond the rate's headcount add, for the same check. */
+  supplements: z.coerce.number().min(0).optional(),
 })
 
 export type BookingInput = z.input<typeof schema>
@@ -144,7 +146,7 @@ export async function submitBooking(input: BookingInput): Promise<BookingResult>
     // is the figure to watch: if the venue still has the service charge and
     // tax on the rate, the guest reads one number here and pays another.
     // Proceed — the payment page is the source of truth — but make it loud.
-    const expected = priceBreakdown(v.minimum_spend ?? 0).payNow
+    const expected = priceBreakdown(v.minimum_spend ?? 0, v.supplements ?? 0).payNow
     if (v.minimum_spend && checkout.total_amount && Math.abs(checkout.total_amount - expected) > 1) {
       console.error(
         '[submitBooking] pay-now mismatch — site showed',

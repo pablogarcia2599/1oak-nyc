@@ -3,7 +3,7 @@
 import { partyTotal } from '@/lib/party'
 import type { Selection } from './types'
 import { isOnRequest } from '@/lib/floorplan'
-import { priceBreakdown } from '@/lib/pricing'
+import { priceFor } from '@/lib/pricing'
 import { formatMoney, nightDate } from '@/lib/utils'
 
 /** Shared by the desktop rail and the mobile drawer. */
@@ -16,7 +16,7 @@ export function SummaryContent({
 }) {
   const date = selection.event ? nightDate(selection.event) : undefined
   const rate = selection.rate
-  const price = rate ? priceBreakdown(rate.price) : undefined
+  const price = rate ? priceFor(rate, partyTotal(selection.party)) : undefined
 
   return (
     <>
