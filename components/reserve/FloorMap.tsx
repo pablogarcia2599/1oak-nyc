@@ -47,13 +47,11 @@ export function FloorMap({
   zone,
   selectedId,
   onSelect,
-  partySize,
   currency,
 }: {
   zone: FvZone
   selectedId?: string
   onSelect: (table: FvTable) => void
-  partySize: number
   currency: string
 }) {
   const tables = useMemo(() => (zone.spaces ?? []).filter(t => !t.hidden), [zone.spaces])
@@ -153,22 +151,12 @@ export function FloorMap({
           const selected = table._id === selectedId
           const bookable = table.available && !table.blocked
 
-          // `available: false` covers two different things. A table the party
-          // does not fit is still for sale on another night; only a blocked
-          // one, or one the party fits that has gone, is actually sold.
+          // The floor is read once for the night now, at a party size that
+          // offers every table, so `available: false` has only one meaning
+          // left: this one is gone.
           const seats = tableSeats(table, zone)
-          const fitsParty = partySize >= table.minimum && partySize <= seats
-          const soldOut = table.blocked || (!table.available && fitsParty)
-
-          const reason = soldOut
-            ? 'sold'
-            : !bookable
-              ? partySize < table.minimum
-                ? `minimum ${table.minimum} guests`
-                : partySize > seats
-                  ? `seats ${seats}`
-                  : 'unavailable'
-              : undefined
+          const soldOut = table.blocked || !table.available
+          const reason = soldOut ? 'sold' : undefined
 
           return (
             <div key={table._id}>

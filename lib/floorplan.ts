@@ -270,12 +270,22 @@ export function tableSeats(table: FvTable, zone?: FvZone): number {
   return Math.max(table.minimum || 1, Math.min(table.capacity, sellable))
 }
 
-/** Party-size bounds the venue actually accepts, across every table on sale. */
-export function partyBounds(zones: FvZone[]): { min: number; max: number } {
+/**
+ * The one party size that shows the whole floor.
+ *
+ * The table is chosen before the guests now, so a single read of availability
+ * has to stand for every table. The API offers a table only while
+ * `minimum <= quantity <= capacity`, so the quantity that leaves none out is
+ * the highest minimum any table carries — as long as no table seats fewer
+ * than that. Where the two cannot both be met the smaller wins, and the
+ * tables with a high minimum read as taken, which is the safe way to be
+ * wrong.
+ */
+export function catalogueQuantity(zones: FvZone[]): number {
   const tables = zones.flatMap(z => (z.spaces ?? []).filter(t => !t.hidden).map(t => [t, z] as const))
-  if (tables.length === 0) return { min: 1, max: 30 }
-  return {
-    min: Math.min(...tables.map(([t]) => t.minimum || 1)),
-    max: Math.max(...tables.map(([t, z]) => tableSeats(t, z))),
-  }
+  if (tables.length === 0) return 1
+  const highestMinimum = Math.max(...tables.map(([t]) => t.minimum || 1))
+  const smallestTable = Math.min(...tables.map(([t, z]) => tableSeats(t, z)))
+  return Math.max(1, Math.min(highestMinimum, smallestTable))
 }
+

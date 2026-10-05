@@ -9,7 +9,6 @@ import { BreakdownLines } from '../Breakdown'
 import { priceBreakdown } from '@/lib/pricing'
 import {
   isOnRequest,
-  partyBounds,
   rateColor,
   ratesFor,
   roomsFrom,
@@ -31,7 +30,6 @@ export function TableStep({
   onTable,
   onRate,
   onParty,
-  bounds,
   currency,
   nightLabel,
 }: {
@@ -46,46 +44,20 @@ export function TableStep({
   onTable: (table?: FvTable) => void
   onRate: (rate: FvTableRate) => void
   onParty: (party: Party) => void
-  /** What the venue as a whole takes — not the room on screen, so that a
-      party which only fits the other room can still be dialled in. */
-  bounds: { min: number; max: number } | null
   currency: string
   /** Used to write the request a guest sends about a contact-only table. */
   nightLabel: string
 }) {
-  // Heading and party size together, above every branch below. Changing the
-  // party size re-reads the floor, and when the control sat inside the body
-  // the loading state took it off screen mid-tap: one press, then nothing to
-  // press. The party size lives with the floor it filters, so it stays put
-  // while the floor redraws.
   const partySize = partyTotal(party)
   const selectedRate = rate ?? (table ? ratesFor(table, zone)[0] : undefined)
 
-  // Once a table is chosen it, not the venue, is the limit. Left on the
-  // venue-wide range a guest could count a party of twelve against a table
-  // that seats eight, which reads as asking for two tables.
-  const partyLimits =
-    table && bounds
-      ? {
-          min: Math.max(bounds.min, table.minimum),
-          max: Math.max(Math.min(bounds.max, tableSeats(table, zone)), bounds.min),
-        }
-      : bounds
+  // The table, once chosen, is the only limit on the party: its own minimum
+  // at the bottom and what its rate sells at the top. Nothing above it.
+  const partyLimits = table
+    ? { min: table.minimum || 1, max: tableSeats(table, zone) }
+    : null
 
-  const header = (
-    <div>
-      <h2 className="heading heading-lg text-bone">Pick your table</h2>
-      <div className="mt-8">
-        <PartyMix
-          party={party}
-          bounds={partyLimits}
-          forTable={Boolean(table)}
-          included={selectedRate?.included_persons}
-          onChange={onParty}
-        />
-      </div>
-    </div>
-  )
+  const header = <h2 className="heading heading-lg text-bone">Pick your table</h2>
 
   if (loading) {
     return (
@@ -115,9 +87,6 @@ export function TableStep({
   }
 
   const rooms = roomsFrom(zone ? [zone] : zones)
-  // Bounds of the room on screen, not of the venue: the two rooms here take
-  // different parties, and a limit from the other one would be wrong advice.
-  const zoneBounds = partyBounds(zone ? [zone] : zones)
   const nothingFree = rooms.every(r => r.availableCount === 0)
   const elsewhere = zones.find(
     z => z._id !== zone?._id && (z.spaces ?? []).some(space => space.available),
@@ -144,19 +113,11 @@ export function TableStep({
       {nothingFree && (
         <div className="material p-6">
           <p className="text-[0.95rem] leading-relaxed text-bone">
-            {zone ? `${zone.name} has nothing for a party of ` : 'Nothing is available for a party of '}
-            <span className="text-gold-lit">{partySize}</span> on this night.
-            {zone && partySize < zoneBounds.min && (
-              <> Tables there take a minimum of {zoneBounds.min} guests.</>
-            )}
-            {zone && partySize > zoneBounds.max && (
-              <> The largest table there seats {zoneBounds.max} guests.</>
-            )}
+            {zone ? `${zone.name} is fully booked for this night.` : 'Nothing is left for this night.'}
           </p>
 
           <div className="mt-5 flex flex-wrap gap-3">
-            {/* A room that does have space is the most useful thing to offer,
-                ahead of changing the party size. */}
+            {/* A room that does have space is the most useful thing to offer. */}
             {elsewhere && (
               <button
                 type="button"
@@ -164,22 +125,6 @@ export function TableStep({
                 className="btn btn-primary w-full sm:w-auto"
               >
                 Try {elsewhere.name}
-              </button>
-            )}
-            {(partySize < zoneBounds.min || partySize > zoneBounds.max) && (
-              <button
-                type="button"
-                onClick={() =>
-                  onParty(
-                    clampParty(party, {
-                      min: zoneBounds.min,
-                      max: zoneBounds.max,
-                    }),
-                  )
-                }
-                className="btn btn-quiet w-full sm:w-auto"
-              >
-                Set party to {partySize < zoneBounds.min ? zoneBounds.min : zoneBounds.max}
               </button>
             )}
           </div>
@@ -193,7 +138,6 @@ export function TableStep({
           <FloorMap
             zone={zone}
             selectedId={table?._id}
-            partySize={partySize}
             currency={currency}
             onSelect={selectTable}
           />
@@ -242,6 +186,21 @@ export function TableStep({
             <button type="button" onClick={() => onTable(undefined)} className="btn btn-plain shrink-0">
               Clear
             </button>
+          </div>
+
+          {/* The guests are counted here, under the table, because the table
+              is what limits them. */}
+          <div className="border-t border-hairline-soft p-5 sm:p-6">
+            <p className="label">Who is coming</p>
+            <div className="mt-5">
+              <PartyMix
+                party={party}
+                bounds={partyLimits}
+                forTable
+                included={selectedRate?.included_persons}
+                onChange={onParty}
+              />
+            </div>
           </div>
 
           {isOnRequest(rate) ? (

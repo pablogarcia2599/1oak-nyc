@@ -10,7 +10,7 @@ import { GuestStep } from './steps/GuestStep'
 import { PricePanel } from './PricePanel'
 import { SummaryContent } from './Summary'
 import { EMPTY_GUEST, STEPS, depositFor, type GuestDetails, type Selection } from './types'
-import { isOnRequest, partyBounds, ratesFor } from '@/lib/floorplan'
+import { catalogueQuantity, isOnRequest, ratesFor, tableSeats } from '@/lib/floorplan'
 import { clampParty, maxMen, partyNote, partyTotal, type Party } from '@/lib/party'
 import { priceBreakdown } from '@/lib/pricing'
 import { cn, formatMoney, nightDate } from '@/lib/utils'
@@ -40,7 +40,9 @@ export function ReserveFlow({
     // start higher.
     party: { men: 4, women: 4 },
   })
-  const [bounds, setBounds] = useState<{ min: number; max: number } | null>(null)
+  // The party size the floor is read at — not the guest's party, which is
+  // counted against the table once there is one.
+  const [floorQuantity, setFloorQuantity] = useState(1)
   const [guest, setGuest] = useState<GuestDetails>(EMPTY_GUEST)
 
   const [zones, setZones] = useState<FvZone[]>([])
@@ -53,16 +55,14 @@ export function ReserveFlow({
 
   const topRef = useRef<HTMLDivElement>(null)
   const stepRef = useRef<HTMLDivElement>(null)
-  // Which night we have already snapped the party size for. Kept in state, not
-  // a ref: a ref mutated inside a state updater is a side effect, and React
-  // double-invokes updaters in development, which swallowed the snap.
-  const [snappedEvent, setSnappedEvent] = useState<string>()
   const currency = selection.event?.currency ?? 'USD'
   const partySize = partyTotal(selection.party)
 
   // ─── Availability ─────────────────────────────────────────────────────────
-  // Re-read the floor whenever the night or the party size changes; a stale
-  // response from a previous party size must never overwrite a newer one.
+  // Read once per night, not once per guest: the table is chosen first now,
+  // and the party is counted against it afterwards. `quantity` still decides
+  // which tables the API offers, so the first read uses 1 and then settles on
+  // the quantity that shows them all.
   useEffect(() => {
     const event = selection.event
     if (!event) return
@@ -74,7 +74,7 @@ export function ReserveFlow({
 
     const timer = setTimeout(() => {
       fetch(
-        `/api/availability?event_id=${encodeURIComponent(event._id)}&quantity=${partySize}`,
+        `/api/availability?event_id=${encodeURIComponent(event._id)}&quantity=${floorQuantity}`,
         { signal: controller.signal },
       )
         .then(async res => {
@@ -84,10 +84,17 @@ export function ReserveFlow({
         })
         .then(data => {
           if (cancelled) return
-          setZones(data)
 
-          const next = partyBounds(data)
-          setBounds(next)
+          // The catalogue's own minimums are only known from a response, so
+          // the first one may have been read at a quantity that hid part of
+          // the floor. Settle on the right one and let the effect run again.
+          const want = catalogueQuantity(data)
+          if (want !== floorQuantity) {
+            setFloorQuantity(want)
+            return
+          }
+
+          setZones(data)
           // Drop selections that the new availability no longer offers.
           setSelection(prev => {
             // A room the guest chose is kept even once it fills up — being
@@ -123,22 +130,7 @@ export function ReserveFlow({
       controller.abort()
       clearTimeout(timer)
     }
-  }, [selection.event, partySize])
-
-  // Tables carry a minimum party size, and the default will not suit every
-  // venue. Snap into range once per night — after that the guest owns the
-  // number, including the edges.
-  useEffect(() => {
-    const event = selection.event
-    if (!bounds || !event || snappedEvent === event._id) return
-    setSnappedEvent(event._id)
-    setSelection(prev => {
-      const party = clampParty(prev.party, bounds)
-      return party.men === prev.party.men && party.women === prev.party.women
-        ? prev
-        : { ...prev, party }
-    })
-  }, [bounds, selection.event, snappedEvent])
+  }, [selection.event, floorQuantity])
 
   // ─── Navigation ───────────────────────────────────────────────────────────
   /**
@@ -191,17 +183,22 @@ export function ReserveFlow({
     selection.zone ?? zones.find(z => (z.spaces ?? []).some(s => s.available)) ?? zones[0]
 
   // A contact-only rate has no checkout to advance to.
-  // A party composed before a table was chosen can break that table's own
-  // limit on men, so the floor must not be left behind in that state.
-  const partyFitsRate =
-    !selection.rate || selection.party.men <= maxMen(partySize, selection.rate.included_persons)
+  // Belt and braces on the table's own limits. The counters cannot reach a
+  // party outside them, and choosing a table brings the party inside them,
+  // but nothing downstream should depend on that having worked.
+  const partyFitsTable = (() => {
+    const { table, rate, zone } = selection
+    if (!table || !rate) return true
+    if (partySize < (table.minimum || 1) || partySize > tableSeats(table, zone)) return false
+    return selection.party.men <= maxMen(partySize, rate.included_persons)
+  })()
 
   const canAdvance =
     step === 0
       ? Boolean(selection.event)
       : Boolean(selection.zone && selection.rate) &&
         !isOnRequest(selection.rate) &&
-        partyFitsRate
+        partyFitsTable
 
   const nightLabel = selection.event
     ? (() => {
@@ -289,6 +286,10 @@ export function ReserveFlow({
                 // availability effect untriggered — its dependency had not
                 // changed — so nothing put a zone back and the next step came
                 // up with no plan on it.
+                if (selection.event?._id !== event._id) {
+                  // Another night's floor can carry different minimums.
+                  setFloorQuantity(1)
+                }
                 setSelection(prev =>
                   prev.event?._id === event._id
                     ? prev
@@ -315,11 +316,22 @@ export function ReserveFlow({
                 setSelection(prev => ({ ...prev, zone, table: undefined, rate: undefined }))
               }
               onTable={(table?: FvTable) =>
-                setSelection(prev => ({ ...prev, table, rate: undefined }))
+                setSelection(prev => ({
+                  ...prev,
+                  table,
+                  rate: undefined,
+                  // The guests are counted against the table, so the table
+                  // sets the range the moment it is chosen.
+                  party: table
+                    ? clampParty(prev.party, {
+                        min: table.minimum || 1,
+                        max: tableSeats(table, prev.zone),
+                      })
+                    : prev.party,
+                }))
               }
               onRate={(rate: FvTableRate) => setSelection(prev => ({ ...prev, rate }))}
               onParty={(party: Party) => setSelection(prev => ({ ...prev, party }))}
-              bounds={bounds}
               nightLabel={nightLabel}
             />
           )}
