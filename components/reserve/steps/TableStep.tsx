@@ -9,9 +9,7 @@ import { BreakdownLines } from '../Breakdown'
 import { priceFor } from '@/lib/pricing'
 import {
   isOnRequest,
-  rateColor,
   ratesFor,
-  roomsFrom,
   tableSeats,
   whatsappLink,
 } from '@/lib/floorplan'
@@ -86,12 +84,10 @@ export function TableStep({
     )
   }
 
-  const rooms = roomsFrom(zone ? [zone] : zones)
-  const nothingFree = rooms.every(r => r.availableCount === 0)
+  const nothingFree = !(zone?.spaces ?? []).some(s => !s.hidden && s.available && !s.blocked)
   const elsewhere = zones.find(
     z => z._id !== zone?._id && (z.spaces ?? []).some(space => space.available),
   )
-  const selectedRateId = table ? ratesFor(table, zone)[0]?._id : undefined
   const allowedMen = maxMen(partySize, selectedRate?.included_persons)
   const menOverAllowance = party.men - allowedMen
 
@@ -103,8 +99,6 @@ export function TableStep({
     if (only && rest.length === 0) onRate(only)
   }
 
-  const tablesOf = (rateId: string) =>
-    (zone?.spaces ?? []).filter(s => !s.hidden && ratesFor(s, zone).some(r => r._id === rateId))
 
   return (
     <div className="space-y-8">
@@ -266,82 +260,11 @@ export function TableStep({
         </div>
       )}
 
-      {/* The venue models each part of the room as a rate, so this is the room
-          list — and the full-size way to choose when the plan's dots are small. */}
-      {zone && (
-        <div>
-          <p className="label">The rooms</p>
-          <ul className="mt-4 space-y-2">
-            {rooms.map(room => {
-              const open = room.rate._id === selectedRateId
-              const free = room.availableCount > 0
-              const firstFree = tablesOf(room.rate._id).find(s => s.available)
-              return (
-                <li
-                  key={room.rate._id}
-                  className={cn('material overflow-hidden', !free && 'opacity-45')}
-                >
-                  <button
-                    type="button"
-                    disabled={!firstFree}
-                    onClick={() => firstFree && selectTable(firstFree)}
-                    className="flex w-full items-center gap-3 p-4 text-left disabled:cursor-not-allowed"
-                  >
-                    <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: rateColor(room.rate, 1) ?? '#b08749' }}
-                      aria-hidden
-                    />
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-[0.95rem] text-bone">
-                        {room.rate.name}
-                      </span>
-                      <span className="label mt-1 block">
-                        {free
-                          ? `${room.availableCount} of ${room.tableCount} free`
-                          : 'Fully booked'}
-                      </span>
-                    </span>
-                    <span className="shrink-0 text-right">
-                      <span className="block text-[0.95rem] tabular-nums text-gold-lit">
-                        {isOnRequest(room.rate)
-                          ? 'On request'
-                          : formatMoney(room.rate.price, currency)}
-                      </span>
-                      <span className="label mt-1 block">
-                        {room.minGuests}–{room.maxGuests} guests
-                      </span>
-                    </span>
-                  </button>
+      {/* What the figures on the plan mean. */}
+      <p className="text-xs leading-relaxed text-faint">
+        Prices are the table minimum spend, redeemable in bottle service on the night.
+      </p>
 
-                  {open && (
-                    <div className="border-t border-hairline-soft p-4">
-                      <p className="label">Choose the table</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {tablesOf(room.rate._id).map(t => (
-                          <button
-                            key={t._id}
-                            type="button"
-                            disabled={!t.available || t.blocked}
-                            onClick={() => selectTable(t)}
-                            aria-pressed={t._id === table?._id}
-                            className="chip"
-                          >
-                            T{t.name}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-          <p className="mt-4 text-xs leading-relaxed text-faint">
-            Prices are the table minimum spend, redeemable in bottle service on the night.
-          </p>
-        </div>
-      )}
     </div>
   )
 }
