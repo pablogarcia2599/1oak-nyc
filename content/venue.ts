@@ -24,8 +24,24 @@ export const VENUE = {
  * The venue's own wording for what it settles at the door. It replaces a
  * priced list of fees, so it is quoted verbatim rather than paraphrased.
  */
+/**
+ * What the venue adds at the table, as percentages of the total spend. Held
+ * as numbers so the sentence below and anything else that quotes them cannot
+ * drift apart.
+ */
+export const VENUE_CHARGES = {
+  salesTax: 8.875,
+  administrationFee: 10,
+  serviceCharge: 20,
+} as const
+
 export const ADDITIONAL_CHARGES =
-  'Any additional spend, sales tax, administrative or service fees, and optional gratuity will be charged separately by the venue at the time of service.'
+  `Any additional spend and optional gratuity are charged by the venue at the time of service. ` +
+  // Figures rather than articles, so the sentence stays correct whatever the
+  // numbers become — "a 8.875%" would have to be "an".
+  `Sales tax of ${VENUE_CHARGES.salesTax}%, an administration fee of ` +
+  `${VENUE_CHARGES.administrationFee}% and a service charge of ` +
+  `${VENUE_CHARGES.serviceCharge}% apply to the total spend.`
 
 /**
  * The card authorisation a guest signs by ticking the box at checkout.
