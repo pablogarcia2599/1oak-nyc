@@ -10,16 +10,20 @@ export default function TermsPage() {
       title="Reservation terms"
       sections={[
         {
-          heading: 'Deposits and minimums',
-          body: `Every table carries a minimum spend, shown before you confirm. A deposit is taken at booking and applied against that minimum. The balance is settled at the table.`,
+          heading: 'Payment and minimums',
+          body: `Every table carries a minimum spend, shown in full before you confirm. The minimum and the processing fee are taken at booking, and that payment is final. Additional spend, sales tax, administrative or service fees and optional gratuity are charged separately by the venue at the time of service, with your approval.`,
         },
         {
           heading: 'Admission',
           body: `${VENUE.agePolicy}. The name on the reservation must match the ID presented at the door. ${VENUE.dressCode}`,
         },
         {
-          heading: 'Changes and cancellations',
-          body: `Party size can be adjusted up to 24 hours before doors by replying to your confirmation email. Deposits are non-refundable inside 48 hours of the event.`,
+          heading: 'Cancellations and refunds',
+          body: `All sales are final. Once a reservation is confirmed, no cancellations, refunds or credits are issued under any circumstances — including a no-show, a late arrival or a smaller party than booked. By confirming you also agree not to dispute or charge back the payment where it matches the terms shown at checkout.`,
+        },
+        {
+          heading: 'Changes to your party',
+          body: `Party size can be adjusted up to 24 hours before doors by replying to your confirmation email, subject to the table's limits and the door's ratio. The amount already paid does not change: all sales are final.`,
         },
         {
           heading: 'Right of admission',

@@ -42,11 +42,15 @@ export const FAQ = [
   },
   {
     q: 'How is payment handled?',
-    a: 'A deposit is taken at the time of booking through our secure payment provider. The balance settles at the table on the night.',
+    a: 'The table minimum and the processing fee are taken at the time of booking through our secure payment provider, and that payment is final. Anything spent beyond the minimum, along with tax, fees and gratuity, settles at the table on the night.',
+  },
+  {
+    q: 'Can I cancel or get a refund?',
+    a: 'No. All sales are final: once a reservation is confirmed, no cancellations, refunds or credits are issued under any circumstances. You accept this at checkout, where ticking the authorisation box stands as your electronic signature.',
   },
   {
     q: 'Can I change the party size after booking?',
-    a: 'Yes, up to 24 hours before doors. Write to the host on your confirmation email and we will adjust the table.',
+    a: 'Yes, up to 24 hours before doors. Write to the host on your confirmation email and we will adjust the table. The amount already paid does not change.',
   },
   {
     q: 'What is the dress code?',
