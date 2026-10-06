@@ -201,7 +201,8 @@ export function TableStep({
               />
               <span className="min-w-0">
                 <span className="mt-0 block text-[0.875rem] leading-relaxed text-bone">
-                  This event has a 1:{WOMEN_PER_MAN} male-to-female ratio.
+                  I acknowledge that this event has a 1:{WOMEN_PER_MAN} male-to-female
+                  ratio.
                 </span>
                 {ratioError && !acceptsRatio && (
                   <span className="mt-2 block text-xs text-red-400">
