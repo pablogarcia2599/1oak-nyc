@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { blockedBy, partyTotal, type Party } from '@/lib/party'
+import { blockedBy, partyTotal, WOMEN_PER_MAN, type Party } from '@/lib/party'
 
 /**
  * Who is coming, counted separately.
@@ -35,8 +35,9 @@ export function PartyMix({
 
   const canAddMan = block === null
   const canAddWoman = total < max
-  // Removing a woman must not leave more men than women behind.
-  const canDropWoman = party.women > 0 && total > min && party.women - 1 >= party.men
+  // Removing a woman must not leave the ratio behind it short.
+  const canDropWoman =
+    party.women > 0 && total > min && party.women - 1 >= party.men * WOMEN_PER_MAN
   const canDropMan = party.men > 0 && total > min
 
   const rows = [

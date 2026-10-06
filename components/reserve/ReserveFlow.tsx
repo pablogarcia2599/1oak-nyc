@@ -35,11 +35,9 @@ export function ReserveFlow({
   )
   const [selection, setSelection] = useState<Selection>({
     event: initialEvent,
-    // The party most tables here are sized for, so the floor opens with
-    // something on it, and split evenly because the venue's rule is one man
-    // per woman. The snap below still corrects it for a venue whose tables
-    // start higher.
-    party: { men: 4, women: 4 },
+    // The party most tables here are sized for, split the way the door
+    // wants it: three women for every man.
+    party: { men: 2, women: 6 },
   })
   // What the venue will ask for this table at this party size. Read from the
   // API rather than worked out here: `supplement_price` does not describe the

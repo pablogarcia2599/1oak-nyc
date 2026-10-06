@@ -3,8 +3,8 @@
  *
  * Two limits, both the venue's:
  *
- *  1. Never more men than women. The ratio may tilt towards women freely; it
- *     may not tilt the other way.
+ *  1. Three women for every man. The ratio may tilt further towards women
+ *     freely; it may not tilt the other way.
  *  2. A table's rate includes a number of guests, and up to four more may be
  *     added on top (every rate here sets `supplement_persons: 4`, which is why
  *     each table's capacity is its included count plus four). At most one of
@@ -14,6 +14,12 @@
  * includes, plus the one man allowed among the extras — and never more than
  * half the party, which rule 1 already settles.
  */
+/** The venue's door ratio: this many women for each man, at least. */
+export const WOMEN_PER_MAN = 3
+
+/** The most men a party of `total` may hold on the ratio alone. */
+export const menAtRatio = (total: number) => Math.floor(total / (WOMEN_PER_MAN + 1))
+
 export interface Party {
   men: number
   women: number
@@ -26,11 +32,11 @@ export const partyTotal = (party: Party) => party.men + party.women
  * rate's included headcount; without a table chosen only the ratio applies.
  */
 export function maxMen(total: number, included?: number): number {
-  const byRatio = Math.floor(total / 2)
+  const byRatio = menAtRatio(total)
   if (included === undefined) return byRatio
   const withinTable = Math.min(total, included)
   const extras = total - withinTable
-  return Math.min(byRatio, Math.floor(withinTable / 2) + (extras > 0 ? 1 : 0))
+  return Math.min(byRatio, menAtRatio(withinTable) + (extras > 0 ? 1 : 0))
 }
 
 /** Why a party cannot take another man — for the line under the counters. */
@@ -42,7 +48,7 @@ export function blockedBy(party: Party, max: number, included?: number): Block {
   if (party.men + 1 > maxMen(next, included)) {
     // Which of the two limits bit: the ratio alone, or the one-man allowance
     // on the extras.
-    return party.men + 1 > Math.floor(next / 2) ? 'ratio' : 'extras'
+    return party.men + 1 > menAtRatio(next) ? 'ratio' : 'extras'
   }
   return null
 }
@@ -57,11 +63,11 @@ export function clampParty(party: Party, bounds: { min: number; max: number }): 
 
   while (men + women < bounds.min) women += 1
   while (men + women > bounds.max) {
-    if (women > men) women -= 1
+    if (women > men * WOMEN_PER_MAN) women -= 1
     else men -= 1
   }
   // A smaller party may no longer carry the men it had.
-  const ceiling = Math.floor((men + women) / 2)
+  const ceiling = menAtRatio(men + women)
   if (men > ceiling) {
     women += men - ceiling
     men = ceiling
