@@ -428,6 +428,7 @@ export function ReserveFlow({
               ratioError={ratioError}
               quote={quote}
               nightLabel={nightLabel}
+              eventName={selection.event?.name}
             />
           )}
 

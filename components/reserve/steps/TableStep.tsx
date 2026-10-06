@@ -35,6 +35,7 @@ export function TableStep({
   quote,
   currency,
   nightLabel,
+  eventName,
 }: {
   zones: FvZone[]
   loading: boolean
@@ -57,6 +58,9 @@ export function TableStep({
   currency: string
   /** Used to write the request a guest sends about a contact-only table. */
   nightLabel: string
+  /** Named above the plan: on a phone nothing else on this step says which
+      night the table is being taken for. */
+  eventName?: string
 }) {
   const selectedRate = rate ?? (table ? ratesFor(table, zone)[0] : undefined)
 
@@ -66,7 +70,16 @@ export function TableStep({
     ? { min: table.minimum || 1, max: tableSeats(table, zone) }
     : null
 
-  const header = <h2 className="heading heading-lg text-bone">Pick your table</h2>
+  const header = (
+    <div>
+      <h2 className="heading heading-lg text-bone">Pick your table</h2>
+      {eventName && (
+        <p className="mt-3 text-sm leading-relaxed text-mute">
+          <span className="text-bone">{eventName}</span> · {nightLabel}
+        </p>
+      )}
+    </div>
+  )
 
   if (loading) {
     return (
