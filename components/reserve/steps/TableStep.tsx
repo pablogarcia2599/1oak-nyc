@@ -189,7 +189,7 @@ export function TableStep({
             <p className="label">Who is coming</p>
             {/* Built from the rule itself, so the two cannot drift apart. */}
             <p className="mt-2 text-sm leading-relaxed text-mute">
-              This event has a 1 man : {WOMEN_PER_MAN} women ratio.
+              This event has a 1:{WOMEN_PER_MAN} male-to-female ratio.
             </p>
             <div className="mt-5">
               <PartyMix
