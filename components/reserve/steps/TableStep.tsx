@@ -254,7 +254,13 @@ export function TableStep({
             </div>
           ) : (
             quote && (
-                <details className="group">
+                // Open from the start. On a phone the rail that itemises
+                // this is not on screen at all, and a figure with no lines
+                // under it invites the question the lines answer. Left to
+                // open itself on mount it would jump the page on the one
+                // device that needed it; the toggle is still there to shut
+                // it.
+                <details className="group" open>
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-4 bg-ink p-5 sm:p-6">
                     <span>
                       <span className="label label-gold block">Pay now</span>
