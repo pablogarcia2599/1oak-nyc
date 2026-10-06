@@ -25,7 +25,7 @@ export const VENUE = {
  * priced list of fees, so it is quoted verbatim rather than paraphrased.
  */
 export const ADDITIONAL_CHARGES =
-  'Any additional spend, sales tax, administrative or service fees, and optional gratuity will be charged separately by the venue at the time of service, with your approval.'
+  'Any additional spend, sales tax, administrative or service fees, and optional gratuity will be charged separately by the venue at the time of service.'
 
 /**
  * The card authorisation a guest signs by ticking the box at checkout.

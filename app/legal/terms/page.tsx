@@ -11,7 +11,7 @@ export default function TermsPage() {
       sections={[
         {
           heading: 'Payment and minimums',
-          body: `Every table carries a minimum spend, shown in full before you confirm. The minimum and the processing fee are taken at booking, and that payment is final. Additional spend, sales tax, administrative or service fees and optional gratuity are charged separately by the venue at the time of service, with your approval.`,
+          body: `Every table carries a minimum spend, shown in full before you confirm. The minimum and the processing fee are taken at booking, and that payment is final. Additional spend, sales tax, administrative or service fees and optional gratuity are charged separately by the venue at the time of service.`,
         },
         {
           heading: 'Admission',
