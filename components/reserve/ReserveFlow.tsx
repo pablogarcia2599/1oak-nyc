@@ -12,7 +12,7 @@ import { SummaryContent } from './Summary'
 import { DisclosureMark } from './DisclosureMark'
 import { EMPTY_GUEST, STEPS, depositFor, type GuestDetails, type Selection } from './types'
 import { catalogueQuantity, isOnRequest, ratesFor, tableSeats } from '@/lib/floorplan'
-import { clampParty, maxMen, partyNote, partyTotal, type Party } from '@/lib/party'
+import { maxMen, partyForTable, partyNote, partyTotal, type Party } from '@/lib/party'
 import { extraGuestsFor, priceBreakdown } from '@/lib/pricing'
 import { cn, formatMoney, nightDate } from '@/lib/utils'
 
@@ -380,13 +380,15 @@ export function ReserveFlow({
                   ...prev,
                   table,
                   rate: undefined,
-                  // The guests are counted against the table, so the table
-                  // sets the range the moment it is chosen.
+                  // The table opens on what it already includes, so the
+                  // first figure a guest sees costs no supplement. Adding
+                  // from there is theirs to decide.
                   party: table
-                    ? clampParty(prev.party, {
-                        min: table.minimum || 1,
-                        max: tableSeats(table, prev.zone),
-                      })
+                    ? partyForTable(
+                        ratesFor(table, prev.zone)[0]?.included_persons ??
+                          (table.minimum || 1),
+                        { min: table.minimum || 1, max: tableSeats(table, prev.zone) },
+                      )
                     : prev.party,
                 }))
               }

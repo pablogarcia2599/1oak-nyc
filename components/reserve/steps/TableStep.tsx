@@ -177,9 +177,6 @@ export function TableStep({
               <p className="heading heading-md mt-2 truncate text-bone">
                 Table {table.name} · {rate.name}
               </p>
-              <p className="label mt-2">
-                {table.minimum}–{tableSeats(table, zone)} guests · {rate.included_persons} included
-              </p>
             </div>
             <button type="button" onClick={() => onTable(undefined)} className="btn btn-plain shrink-0">
               Clear

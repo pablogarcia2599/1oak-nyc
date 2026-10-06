@@ -109,7 +109,8 @@ export function PartyMix({
 
       <p className="label mt-3">
         {total} {total === 1 ? 'guest' : 'guests'}
-        {bounds && (forTable ? ` · this table takes ${min}–${max}` : ` · ${min}–${max} per table`)}
+        {included !== undefined && ` · ${included} included`}
+        {bounds && (forTable ? ` · up to ${max}` : ` · ${min}–${max} per table`)}
       </p>
 
       {block === 'extras' && included !== undefined && (

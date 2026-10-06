@@ -76,6 +76,19 @@ export function clampParty(party: Party, bounds: { min: number; max: number }): 
   return { men, women }
 }
 
+/**
+ * The party a table opens on: the headcount its rate already includes, split
+ * the way the door wants it. Nobody is paying a supplement they did not ask
+ * for, and adding guests from there is the guest's own move.
+ */
+export function partyForTable(
+  included: number,
+  bounds: { min: number; max: number },
+): Party {
+  const men = menAtRatio(included)
+  return clampParty({ men, women: included - men }, bounds)
+}
+
 /** The line written onto the booking for the venue to read in FV Pro. */
 export function partyNote({ men, women }: Party): string {
   const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`
