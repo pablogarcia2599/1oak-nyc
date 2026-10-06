@@ -314,9 +314,13 @@ export function ReserveFlow({
         birthdate: guest.birthdate || undefined,
         // The venue reads this on the booking in FV Pro, so the mix leads and
         // whatever the guest wrote follows it.
+        // What the venue reads on the booking in FV Pro. Each line is written
+        // from the tick that earned it rather than assumed from the fact that
+        // the booking got this far: a note that cannot be false is worth more
+        // than one that is merely usually true.
         observations_client: [
-          ratioNote(),
-          'Card authorisation accepted at checkout.',
+          acceptsRatio ? ratioNote() : undefined,
+          guest.accepts_charge ? 'Card authorisation accepted at checkout.' : undefined,
           guest.observations_client.trim(),
         ]
           .filter(Boolean)
