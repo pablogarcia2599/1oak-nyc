@@ -27,6 +27,14 @@ export const VENUE = {
 export const ADDITIONAL_CHARGES =
   'Any additional spend, sales tax, administrative or service fees, and optional gratuity will be charged separately by the venue at the time of service, with your approval.'
 
+/**
+ * The card authorisation a guest signs by ticking the box at checkout.
+ * Verbatim from the venue, with the merchant named as the party that takes
+ * the payment.
+ */
+export const CHARGE_AUTHORISATION =
+  'By checking this box, I authorize Fourvenues to charge my credit card one time for the stated amount corresponding to my reservation or purchase as specified at checkout. I confirm I am the authorized cardholder and have reviewed and accepted the cancellation and refund policy. I understand that all sales are final, and no cancellations, refunds, or credits will be issued under any circumstances. I agree not to dispute or charge back this payment if it matches the agreed terms. Taxes, gratuity, and operational charge are not included. Checking this box equals my electronic signature and full acceptance of these terms.'
+
 export const FAQ = [
   {
     q: 'What does a table reservation include?',

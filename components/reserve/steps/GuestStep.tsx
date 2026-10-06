@@ -3,7 +3,7 @@
 import { BirthdateField } from '../BirthdateField'
 import { PhoneField } from '../PhoneField'
 import type { GuestDetails } from '../types'
-import { VENUE } from '@/content/venue'
+import { CHARGE_AUTHORISATION, VENUE } from '@/content/venue'
 import { cn } from '@/lib/utils'
 
 function Field({
@@ -144,6 +144,46 @@ export function GuestStep({
               {VENUE.agePolicy.toLowerCase()}.
             </span>
             {errors.accepts_terms && (
+              <span className="mt-2 block text-xs text-red-400">
+                Tick this to continue.
+              </span>
+            )}
+          </span>
+        </label>
+
+        {/* The card authorisation. Long because it is a signature, not a
+            nicety — the guest is agreeing to a charge and waiving a
+            chargeback, so it says so in the venue's own words. */}
+        <label
+          data-invalid={errors.accepts_charge ? true : undefined}
+          className={cn(
+            'flex cursor-pointer items-start gap-4 rounded-sm border p-4 transition-colors duration-300',
+            errors.accepts_charge
+              ? 'border-red-400 bg-red-500/5'
+              : guest.accepts_charge
+                ? 'border-hairline bg-surface'
+                : 'border-gold/45 bg-surface',
+          )}
+        >
+          <input
+            type="checkbox"
+            checked={guest.accepts_charge}
+            onChange={e => onChange({ accepts_charge: e.target.checked })}
+            className="check mt-0.5"
+          />
+          <span className="min-w-0">
+            <span
+              className={cn(
+                'label block',
+                errors.accepts_charge ? 'text-red-400' : 'label-gold',
+              )}
+            >
+              Required
+            </span>
+            <span className="mt-1.5 block text-[0.875rem] leading-relaxed text-bone">
+              {CHARGE_AUTHORISATION}
+            </span>
+            {errors.accepts_charge && (
               <span className="mt-2 block text-xs text-red-400">
                 Tick this to continue.
               </span>

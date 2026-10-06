@@ -231,6 +231,7 @@ export function ReserveFlow({
     if (!/^[+\d][\d\s().-]{6,}$/.test(guest.phone.trim()))
       errors.phone = 'Please enter a reachable phone number.'
     if (!guest.accepts_terms) errors.accepts_terms = 'Required.'
+    if (!guest.accepts_charge) errors.accepts_charge = 'Required.'
     setFieldErrors(errors)
     return Object.keys(errors).length === 0
   }
@@ -298,7 +299,11 @@ export function ReserveFlow({
         birthdate: guest.birthdate || undefined,
         // The venue reads this on the booking in FV Pro, so the mix leads and
         // whatever the guest wrote follows it.
-        observations_client: [partyNote(selection.party), guest.observations_client.trim()]
+        observations_client: [
+          partyNote(selection.party),
+          'Card authorisation accepted at checkout.',
+          guest.observations_client.trim(),
+        ]
           .filter(Boolean)
           .join(' — '),
         marketing_consent: guest.marketing_consent,

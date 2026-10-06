@@ -19,6 +19,8 @@ export interface GuestDetails {
   discount_code: string
   marketing_consent: boolean
   accepts_terms: boolean
+  /** The card authorisation, which stands as an electronic signature. */
+  accepts_charge: boolean
 }
 
 export const EMPTY_GUEST: GuestDetails = {
@@ -30,6 +32,7 @@ export const EMPTY_GUEST: GuestDetails = {
   discount_code: '',
   marketing_consent: false,
   accepts_terms: false,
+  accepts_charge: false,
 }
 
 export const STEPS = ['The night', 'The table', 'Details'] as const
