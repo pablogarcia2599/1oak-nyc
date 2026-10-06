@@ -15,7 +15,7 @@ import {
   whatsappLink,
 } from '@/lib/floorplan'
 import { cn, formatMoney } from '@/lib/utils'
-import { clampParty, maxMen, partyTotal, type Party } from '@/lib/party'
+import { clampParty, maxMen, partyTotal, WOMEN_PER_MAN, type Party } from '@/lib/party'
 
 export function TableStep({
   zones,
@@ -187,6 +187,10 @@ export function TableStep({
               is what limits them. */}
           <div className="border-t border-hairline-soft p-5 sm:p-6">
             <p className="label">Who is coming</p>
+            {/* Built from the rule itself, so the two cannot drift apart. */}
+            <p className="mt-2 text-sm leading-relaxed text-mute">
+              This event has a 1 man : {WOMEN_PER_MAN} women ratio.
+            </p>
             <div className="mt-5">
               <PartyMix
                 party={party}
