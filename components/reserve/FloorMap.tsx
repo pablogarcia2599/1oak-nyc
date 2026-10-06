@@ -130,14 +130,14 @@ export function FloorMap({
 
   return (
     <div
-      // Bounded by height as well as width so the whole plan sits above the
-      // fold at this step — tightly on a phone, where the step has to fit the
-      // screen, and more generously on a desktop, where it only has to fit the
-      // window.
-      className="material-lg mx-auto w-full max-w-(--plan-max) overflow-hidden lg:max-w-(--plan-max-lg)"
+      // Bounded by height as well as width so the plan stays a plan rather
+      // than a page. On a phone it runs to both edges of the screen and the
+      // height allowance is loose enough that the width is what decides —
+      // the room is drawn at a legible size, and the tags with it.
+      className="material-lg bleed max-w-(--plan-max) overflow-hidden max-sm:rounded-none max-sm:border-x-0 sm:mx-auto sm:w-full lg:max-w-(--plan-max-lg)"
       style={
         {
-          '--plan-max': `calc(50svh * ${aspect})`,
+          '--plan-max': `calc(64svh * ${aspect})`,
           '--plan-max-lg': `calc(72svh * ${aspect})`,
         } as React.CSSProperties
       }

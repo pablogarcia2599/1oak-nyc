@@ -170,6 +170,24 @@
     padding-left: max(1.25rem, env(safe-area-inset-left));
     padding-right: max(1.25rem, env(safe-area-inset-right));
   }
+  /* Undoes `.gutter` for something that should run to the screen edge on a
+     phone — exactly, so it cannot drift from it. Width as well as margins:
+     a percentage width is a percentage of the gutter's box, so negative
+     margins alone only re-centre the thing, they do not widen it. */
+  .bleed {
+    --bleed-left: max(1.25rem, env(safe-area-inset-left));
+    --bleed-right: max(1.25rem, env(safe-area-inset-right));
+    margin-left: calc(-1 * var(--bleed-left));
+    margin-right: calc(-1 * var(--bleed-right));
+    width: calc(100% + var(--bleed-left) + var(--bleed-right));
+  }
+  @media (min-width: 40rem) {
+    .bleed {
+      margin-left: 0;
+      margin-right: 0;
+      width: 100%;
+    }
+  }
 
   @media (min-width: 40rem) {
     .gutter {
