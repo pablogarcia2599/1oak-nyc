@@ -1,16 +1,24 @@
+'use client'
+
 import Image from 'next/image'
+import { useState } from 'react'
 import type { FvEvent } from '@/types/fourvenues'
 import { cn, doorHours, formatMoney, nightDate } from '@/lib/utils'
+
+/** Until the artwork loads and says otherwise. Portrait, like most flyers. */
+const ASSUMED_ASPECT = 4 / 5
 
 /**
  * A night as a bill poster: the artwork whole, and under it the date stacked
  * beside the name across the hairline the forms and the lockup already use.
  *
- * Sized by container query, not by viewport. The same poster sits two-up on a
- * phone (~170px) and two-up inside the booking flow's narrow column on a
- * laptop (~145px) — a viewport breakpoint would hand the narrower of the two
- * the wide-screen treatment. Below 15rem the bar keeps only what a 110px text
- * column can carry: the date and the name, with the opening price abbreviated.
+ * The frame takes the artwork's own proportions rather than imposing any.
+ * A fixed box can only crop or letterbox, and the venue's flyers are not one
+ * shape — the Cardi B artwork is 187×346, nearly twice as tall as it is wide,
+ * and a square frame ate the bottom two lines of it.
+ *
+ * Sized by container query, not by viewport: the same poster sits two-up on a
+ * phone and two-up inside the booking flow's narrower column on a laptop.
  */
 export function NightPoster({
   event,
@@ -23,16 +31,21 @@ export function NightPoster({
   dimmed?: boolean
 }) {
   const date = nightDate(event)
+  const [aspect, setAspect] = useState(ASSUMED_ASPECT)
 
   return (
     <>
       {event.image_url && (
-        <div className="relative aspect-square overflow-hidden @min-[15rem]:aspect-4/5">
+        <div className="relative overflow-hidden" style={{ aspectRatio: String(aspect) }}>
           <Image
             src={event.image_url}
             alt=""
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            onLoad={e => {
+              const { naturalWidth, naturalHeight } = e.currentTarget
+              if (naturalWidth && naturalHeight) setAspect(naturalWidth / naturalHeight)
+            }}
             className={cn(
               'object-cover transition-all duration-[900ms] ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:scale-[1.03]',
               dimmed && 'opacity-60',

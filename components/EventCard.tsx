@@ -6,7 +6,7 @@ export function EventCard({ event, fromPrice }: { event: FvEvent; fromPrice?: nu
   return (
     <Link
       href={`/reserve?event=${event.slug}`}
-      className="group @container flex h-full flex-col overflow-hidden bg-ink transition-colors duration-500 hover:bg-surface"
+      className="material-lg group @container flex h-full flex-col overflow-hidden transition-colors duration-500 hover:border-hairline hover:bg-surface"
     >
       <NightPoster event={event} fromPrice={fromPrice} />
     </Link>
