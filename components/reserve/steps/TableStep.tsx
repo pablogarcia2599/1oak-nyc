@@ -3,7 +3,7 @@
 import type { FvTable, FvTableRate, FvZone } from '@/types/fourvenues'
 import { FloorMap } from '../FloorMap'
 import { ZoneSwitch } from '../ZoneSwitch'
-import { PartyMix } from '../PartyMix'
+import { GuestCount } from '../GuestCount'
 import { DisclosureMark } from '../DisclosureMark'
 import { VENUE } from '@/content/venue'
 import { BreakdownLines } from '../Breakdown'
@@ -15,20 +15,23 @@ import {
   whatsappLink,
 } from '@/lib/floorplan'
 import { cn, formatMoney } from '@/lib/utils'
-import { clampParty, maxMen, partyTotal, WOMEN_PER_MAN, type Party } from '@/lib/party'
+import { WOMEN_PER_MAN } from '@/lib/party'
 
 export function TableStep({
   zones,
   loading,
   error,
-  party,
+  partySize,
   zone,
   table,
   rate,
   onZone,
   onTable,
   onRate,
-  onParty,
+  onPartySize,
+  acceptsRatio,
+  onAcceptsRatio,
+  ratioError,
   quote,
   currency,
   nightLabel,
@@ -36,21 +39,25 @@ export function TableStep({
   zones: FvZone[]
   loading: boolean
   error?: string
-  party: Party
+  partySize: number
   zone?: FvZone
   table?: FvTable
   rate?: FvTableRate
   onZone: (zone: FvZone) => void
   onTable: (table?: FvTable) => void
   onRate: (rate: FvTableRate) => void
-  onParty: (party: Party) => void
+  onPartySize: (size: number) => void
+  /** The door's ratio, acknowledged before the step will let you past. */
+  acceptsRatio: boolean
+  onAcceptsRatio: (accepted: boolean) => void
+  /** Set when the guest tried to continue without acknowledging it. */
+  ratioError?: boolean
   /** What the venue will ask, read from the API for this party size. */
   quote?: Breakdown
   currency: string
   /** Used to write the request a guest sends about a contact-only table. */
   nightLabel: string
 }) {
-  const partySize = partyTotal(party)
   const selectedRate = rate ?? (table ? ratesFor(table, zone)[0] : undefined)
 
   // The table, once chosen, is the only limit on the party: its own minimum
@@ -92,8 +99,6 @@ export function TableStep({
   const elsewhere = zones.find(
     z => z._id !== zone?._id && (z.spaces ?? []).some(space => space.available),
   )
-  const allowedMen = maxMen(partySize, selectedRate?.included_persons)
-  const menOverAllowance = party.men - allowedMen
 
   const selectTable = (t: FvTable) => {
     onTable(t)
@@ -143,29 +148,6 @@ export function TableStep({
       )}
 
       {/* What you just tapped, spelled out. */}
-      {/* The party was composed before a table was chosen, so this table's
-          included headcount can turn out to be the stricter limit. Say so
-          where the choice was made, with the correction one tap away. */}
-      {menOverAllowance > 0 && rate && (
-        <div className="material p-6">
-          <p className="text-[0.95rem] leading-relaxed text-bone">
-            This table includes{' '}
-            <span className="text-gold-lit">{rate.included_persons}</span> guests, and only one of
-            the extras may be a man. A party of {partySize} here takes at most{' '}
-            <span className="text-gold-lit">{allowedMen}</span>.
-          </p>
-          <button
-            type="button"
-            onClick={() =>
-              onParty({ men: allowedMen, women: partySize - allowedMen })
-            }
-            className="btn btn-primary mt-5 w-full sm:w-auto"
-          >
-            Set to {allowedMen} men · {partySize - allowedMen} women
-          </button>
-        </div>
-      )}
-
       {table && rate && (
         <div
           className="material-lg overflow-hidden"
@@ -187,19 +169,47 @@ export function TableStep({
               is what limits them. */}
           <div className="border-t border-hairline-soft p-5 sm:p-6">
             <p className="label">Who is coming</p>
-            {/* Built from the rule itself, so the two cannot drift apart. */}
-            <p className="mt-2 text-sm leading-relaxed text-mute">
-              This event has a 1:{WOMEN_PER_MAN} male-to-female ratio.
-            </p>
             <div className="mt-5">
-              <PartyMix
-                party={party}
+              <GuestCount
+                value={partySize}
                 bounds={partyLimits}
-                forTable
                 included={selectedRate?.included_persons}
-                onChange={onParty}
+                onChange={onPartySize}
               />
             </div>
+
+            {/* The door's rule is not ours to apply to a headcount, so it is
+                put to the guest instead — and the step will not pass until
+                they have taken it. Written from the rule itself, so the
+                sentence cannot drift from it. */}
+            <label
+              data-invalid={ratioError && !acceptsRatio ? true : undefined}
+              className={cn(
+                'mt-5 flex cursor-pointer items-start gap-4 rounded-sm border p-4 transition-colors duration-300',
+                ratioError && !acceptsRatio
+                  ? 'border-red-400 bg-red-500/5'
+                  : acceptsRatio
+                    ? 'border-hairline bg-surface'
+                    : 'border-gold/45 bg-surface',
+              )}
+            >
+              <input
+                type="checkbox"
+                checked={acceptsRatio}
+                onChange={e => onAcceptsRatio(e.target.checked)}
+                className="check mt-0.5"
+              />
+              <span className="min-w-0">
+                <span className="mt-0 block text-[0.875rem] leading-relaxed text-bone">
+                  This event has a 1:{WOMEN_PER_MAN} male-to-female ratio.
+                </span>
+                {ratioError && !acceptsRatio && (
+                  <span className="mt-2 block text-xs text-red-400">
+                    Tick this to continue.
+                  </span>
+                )}
+              </span>
+            </label>
           </div>
 
           {isOnRequest(rate) ? (

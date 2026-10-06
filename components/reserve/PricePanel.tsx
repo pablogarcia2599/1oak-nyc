@@ -1,6 +1,5 @@
 'use client'
 
-import { partyTotal } from '@/lib/party'
 import type { Selection } from './types'
 import { BreakdownLines } from './Breakdown'
 import { DisclosureMark } from './DisclosureMark'
@@ -27,7 +26,7 @@ export function PricePanel({
   error?: string
 }) {
   const { event, zone, table, rate } = selection
-  const partySize = partyTotal(selection.party)
+  const partySize = selection.partySize
   if (!event || !zone || !rate || !quote) return null
 
   const price = quote

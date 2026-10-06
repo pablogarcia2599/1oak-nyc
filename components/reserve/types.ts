@@ -1,10 +1,7 @@
 import type { FvEvent, FvTable, FvTableRate, FvZone } from '@/types/fourvenues'
-import type { Party } from '@/lib/party'
-
 export interface Selection {
   event?: FvEvent
-  /** Counted by sex: the venue holds the room to one man per woman. */
-  party: Party
+  partySize: number
   zone?: FvZone
   table?: FvTable
   rate?: FvTableRate

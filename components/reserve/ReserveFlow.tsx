@@ -12,7 +12,7 @@ import { SummaryContent } from './Summary'
 import { DisclosureMark } from './DisclosureMark'
 import { EMPTY_GUEST, STEPS, depositFor, type GuestDetails, type Selection } from './types'
 import { catalogueQuantity, isOnRequest, ratesFor, tableSeats } from '@/lib/floorplan'
-import { maxMen, partyForTable, partyNote, partyTotal, type Party } from '@/lib/party'
+import { ratioNote, sizeForTable } from '@/lib/party'
 import { extraGuestsFor, priceBreakdown } from '@/lib/pricing'
 import { cn, formatMoney, nightDate } from '@/lib/utils'
 
@@ -35,15 +35,20 @@ export function ReserveFlow({
   )
   const [selection, setSelection] = useState<Selection>({
     event: initialEvent,
-    // The party most tables here are sized for, split the way the door
-    // wants it: three women for every man.
-    party: { men: 2, women: 6 },
+    // The party most tables here are sized for, so the floor opens with
+    // something on it until a table sets its own.
+    partySize: 8,
   })
   // What the venue will ask for this table at this party size. Read from the
   // API rather than worked out here: `supplement_price` does not describe the
   // whole curve — one table steps by 2,000 a head and then by 4,000 for the
   // last — and a price we invent is a price we get wrong.
   const [quotedTotal, setQuotedTotal] = useState<number>()
+
+  // The door's ratio, put to the guest on the table step. Kept here because
+  // it gates leaving that step, like the selection itself.
+  const [acceptsRatio, setAcceptsRatio] = useState(false)
+  const [ratioError, setRatioError] = useState(false)
 
   // The party size the floor is read at — not the guest's party, which is
   // counted against the table once there is one.
@@ -61,7 +66,7 @@ export function ReserveFlow({
   const topRef = useRef<HTMLDivElement>(null)
   const stepRef = useRef<HTMLDivElement>(null)
   const currency = selection.event?.currency ?? 'USD'
-  const partySize = partyTotal(selection.party)
+  const partySize = selection.partySize
 
   // ─── Availability ─────────────────────────────────────────────────────────
   // Read once per night, not once per guest: the table is chosen first now,
@@ -243,14 +248,13 @@ export function ReserveFlow({
     selection.zone ?? zones.find(z => (z.spaces ?? []).some(s => s.available)) ?? zones[0]
 
   // A contact-only rate has no checkout to advance to.
-  // Belt and braces on the table's own limits. The counters cannot reach a
-  // party outside them, and choosing a table brings the party inside them,
-  // but nothing downstream should depend on that having worked.
+  // Belt and braces on the table's own limits. The counter cannot reach a
+  // headcount outside them, and choosing a table brings it inside them, but
+  // nothing downstream should depend on that having worked.
   const partyFitsTable = (() => {
     const { table, rate, zone } = selection
     if (!table || !rate) return true
-    if (partySize < (table.minimum || 1) || partySize > tableSeats(table, zone)) return false
-    return selection.party.men <= maxMen(partySize, rate.included_persons)
+    return partySize >= (table.minimum || 1) && partySize <= tableSeats(table, zone)
   })()
 
   const canAdvance =
@@ -268,6 +272,17 @@ export function ReserveFlow({
     : 'an upcoming night'
 
   function next() {
+    // The ratio is not a reason to grey out Continue — a dead button that
+    // will not say why is the worst of both. Let it be pressed, then point
+    // at what is missing.
+    if (step === 1 && !acceptsRatio) {
+      setRatioError(true)
+      stepRef.current?.querySelector('label[data-invalid]')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      })
+      return
+    }
     goTo(Math.min(STEPS.length - 1, step + 1))
   }
 
@@ -300,7 +315,7 @@ export function ReserveFlow({
         // The venue reads this on the booking in FV Pro, so the mix leads and
         // whatever the guest wrote follows it.
         observations_client: [
-          partyNote(selection.party),
+          ratioNote(),
           'Card authorisation accepted at checkout.',
           guest.observations_client.trim(),
         ]
@@ -372,7 +387,7 @@ export function ReserveFlow({
               zones={zones}
               loading={loadingZones}
               error={zonesError}
-              party={selection.party}
+              partySize={selection.partySize}
               zone={activeZone}
               table={selection.table}
               rate={selection.rate}
@@ -388,17 +403,25 @@ export function ReserveFlow({
                   // The table opens on what it already includes, so the
                   // first figure a guest sees costs no supplement. Adding
                   // from there is theirs to decide.
-                  party: table
-                    ? partyForTable(
+                  partySize: table
+                    ? sizeForTable(
                         ratesFor(table, prev.zone)[0]?.included_persons ??
                           (table.minimum || 1),
                         { min: table.minimum || 1, max: tableSeats(table, prev.zone) },
                       )
-                    : prev.party,
+                    : prev.partySize,
                 }))
               }
               onRate={(rate: FvTableRate) => setSelection(prev => ({ ...prev, rate }))}
-              onParty={(party: Party) => setSelection(prev => ({ ...prev, party }))}
+              onPartySize={(size: number) =>
+                setSelection(prev => ({ ...prev, partySize: size }))
+              }
+              acceptsRatio={acceptsRatio}
+              onAcceptsRatio={next => {
+                setAcceptsRatio(next)
+                if (next) setRatioError(false)
+              }}
+              ratioError={ratioError}
               quote={quote}
               nightLabel={nightLabel}
             />
