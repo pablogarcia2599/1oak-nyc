@@ -83,7 +83,8 @@ export function GuestStep({
           onChange={birthdate => onChange({ birthdate })}
         />
 
-        {/* Still optional — the word just does not earn its place here. */}
+        {/* All three of these stay optional; the word is just not carried
+            in the labels. */}
         <Field label="Promoter">
           <input
             className="field"
@@ -96,7 +97,7 @@ export function GuestStep({
         </Field>
 
         <div className="sm:col-span-2">
-          <Field label="Notes for the host (optional)">
+          <Field label="Notes for the host">
             <textarea
               className="field resize-none"
               rows={3}

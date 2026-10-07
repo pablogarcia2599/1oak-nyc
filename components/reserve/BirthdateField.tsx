@@ -59,7 +59,7 @@ export function BirthdateField({
 
   return (
     <div>
-      <span className="label">Date of birth (optional)</span>
+      <span className="label">Date of birth</span>
       <div className="mt-2 flex items-center gap-2">
         <input
           className={cn('field w-16 text-center', error && 'border-red-400')}
