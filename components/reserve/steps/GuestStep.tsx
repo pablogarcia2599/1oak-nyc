@@ -83,6 +83,17 @@ export function GuestStep({
           onChange={birthdate => onChange({ birthdate })}
         />
 
+        <Field label="Promoter (optional)">
+          <input
+            className="field"
+            value={guest.promoter}
+            onChange={e => onChange({ promoter: e.target.value })}
+            autoComplete="off"
+            maxLength={60}
+            placeholder="Who shared the link with you"
+          />
+        </Field>
+
         <div className="sm:col-span-2">
           <Field label="Notes for the host (optional)">
             <textarea

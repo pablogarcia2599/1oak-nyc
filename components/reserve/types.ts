@@ -13,6 +13,8 @@ export interface GuestDetails {
   phone: string
   birthdate: string
   observations_client: string
+  /** Who shared the link, for the venue to credit. */
+  promoter: string
   discount_code: string
   marketing_consent: boolean
   accepts_terms: boolean
@@ -26,6 +28,7 @@ export const EMPTY_GUEST: GuestDetails = {
   phone: '',
   birthdate: '',
   observations_client: '',
+  promoter: '',
   discount_code: '',
   marketing_consent: false,
   accepts_terms: false,

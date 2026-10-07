@@ -319,6 +319,7 @@ export function ReserveFlow({
         // the booking got this far: a note that cannot be false is worth more
         // than one that is merely usually true.
         observations_client: [
+          guest.promoter.trim() ? `Promoter: ${guest.promoter.trim()}` : undefined,
           acceptsRatio ? ratioNote() : undefined,
           guest.accepts_charge ? 'Card authorisation accepted at checkout.' : undefined,
           guest.observations_client.trim(),

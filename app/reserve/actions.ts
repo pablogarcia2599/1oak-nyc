@@ -26,7 +26,13 @@ const schema = z.object({
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .optional()
     .or(z.literal('')),
-  observations_client: z.string().max(500).optional(),
+  /**
+   * The guest's own note is capped at 500 in the form, and the booking
+   * prepends the promoter and the two acknowledgements to it. Capped at 500
+   * here too, a guest who filled the box would have been turned away at the
+   * last step by a validation error about a field they never saw.
+   */
+  observations_client: z.string().max(1000).optional(),
   marketing_consent: z.boolean().default(false),
   discount_code: z.string().trim().max(40).optional(),
   /** The rate's minimum spend, so the server can check what it was shown. */
