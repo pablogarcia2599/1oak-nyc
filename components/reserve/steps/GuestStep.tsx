@@ -83,7 +83,8 @@ export function GuestStep({
           onChange={birthdate => onChange({ birthdate })}
         />
 
-        <Field label="Promoter (optional)">
+        {/* Still optional — the word just does not earn its place here. */}
+        <Field label="Promoter">
           <input
             className="field"
             value={guest.promoter}
