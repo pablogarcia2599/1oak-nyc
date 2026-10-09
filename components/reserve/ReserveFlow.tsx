@@ -16,27 +16,6 @@ import { ratioNote, sizeForTable } from '@/lib/party'
 import { extraGuestsFor, priceBreakdown } from '@/lib/pricing'
 import { cn, formatMoney, nightDate } from '@/lib/utils'
 
-/**
- * The event a shared link points at.
- *
- * Fourvenues builds a slug from the event's name, so renaming a night in FV
- * Pro breaks every link already out in the world — "CARDI B'S BIRTHDAY"
- * became "CARDI B" and the link went from opening the floor to opening the
- * night list. The date at the end of the slug survives the rename, so fall
- * back to that, and only when it picks out a single night: two events on one
- * date is not something to guess at.
- */
-function resolveEvent(events: FvEvent[], slug?: string): FvEvent | undefined {
-  if (!slug) return undefined
-  const exact = events.find(e => e.slug === slug)
-  if (exact) return exact
-
-  const date = slug.match(/(\d{2}-\d{2}-\d{4})$/)?.[1]
-  if (!date) return undefined
-  const sameNight = events.filter(e => e.slug.endsWith(`-${date}`))
-  return sameNight.length === 1 ? sameNight[0] : undefined
-}
-
 export function ReserveFlow({
   events,
   initialEventSlug,
@@ -44,7 +23,13 @@ export function ReserveFlow({
   events: FvEvent[]
   initialEventSlug?: string
 }) {
-  const linkedEvent = resolveEvent(events, initialEventSlug)
+  // Exactly, and nothing cleverer. A slug that no longer matches belongs to
+  // a night that was renamed or replaced, and quietly serving whatever took
+  // its place would sell a guest a different event than the one they were
+  // sent to. The page above turns that into a 404.
+  const linkedEvent = initialEventSlug
+    ? events.find(e => e.slug === initialEventSlug)
+    : undefined
 
   // Default to the next night: it makes the party-size limits meaningful
   // straight away, since they are only known once availability has loaded.
@@ -54,16 +39,6 @@ export function ReserveFlow({
   // answered; opening on it would be the tap this flow just lost.
   const [step, setStep] = useState(linkedEvent ? 1 : 0)
 
-  // A link that came in on an older name keeps working, but it should not
-  // keep saying the old name in the address bar.
-  useEffect(() => {
-    if (!linkedEvent || !initialEventSlug || linkedEvent.slug === initialEventSlug) return
-    const url = new URL(window.location.href)
-    url.searchParams.set('event', linkedEvent.slug)
-    window.history.replaceState(null, '', url)
-    // Once, for the slug the page was opened with.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
   const [selection, setSelection] = useState<Selection>({
     event: initialEvent,
     // The party most tables here are sized for, so the floor opens with
