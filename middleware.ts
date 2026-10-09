@@ -28,10 +28,17 @@ export function safeEqual(a: string, b: string): boolean {
 
 /**
  * Shared links that must stop working outright. Answered with a bare 404 —
- * no site chrome, no gate, and before the renamed-night fallback in the
- * reservation flow can quietly open the night anyway.
+ * no site chrome, no gate, and whatever the calendar happens to hold.
+ *
+ * `/reserve` already answers an unknown slug with the site's own 404, which
+ * covers a night that was renamed or taken down. This list is for the
+ * stronger case: a link that must stay dead even if a night with that slug
+ * ever comes back.
  */
-const DEAD_EVENT_SLUGS = new Set(['firday-1009---cardi-bs-birthday-09-10-2026'])
+const DEAD_EVENT_SLUGS = new Set([
+  'firday-1009---cardi-bs-birthday-09-10-2026',
+  'cardi-b-09-10-2026',
+])
 
 export async function middleware(request: NextRequest) {
   const { pathname: path, searchParams } = request.nextUrl
