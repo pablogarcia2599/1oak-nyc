@@ -26,7 +26,23 @@ export function safeEqual(a: string, b: string): boolean {
   return diff === 0
 }
 
+/**
+ * Shared links that must stop working outright. Answered with a bare 404 —
+ * no site chrome, no gate, and before the renamed-night fallback in the
+ * reservation flow can quietly open the night anyway.
+ */
+const DEAD_EVENT_SLUGS = new Set(['firday-1009---cardi-bs-birthday-09-10-2026'])
+
 export async function middleware(request: NextRequest) {
+  const { pathname: path, searchParams } = request.nextUrl
+  const event = searchParams.get('event')?.toLowerCase()
+  if (path.startsWith('/reserve') && event && DEAD_EVENT_SLUGS.has(event)) {
+    return new NextResponse('Not Found', {
+      status: 404,
+      headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
+    })
+  }
+
   const password = process.env.SITE_PASSWORD
   if (!password) return NextResponse.next()
 
