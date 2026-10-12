@@ -40,6 +40,14 @@ const DEAD_EVENT_SLUGS = new Set([
   'cardi-b-09-10-2026',
 ])
 
+/**
+ * Shared links whose night was replaced by one the venue wants them to open
+ * instead. Without an entry here, `/reserve` would answer them with a 404.
+ */
+const MOVED_EVENT_SLUGS: Record<string, string> = {
+  'party-at-453-w-17th-s-09-10-2026': 'french-montana--fetty-wap-09-10-2026',
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname: path, searchParams } = request.nextUrl
   const event = searchParams.get('event')?.toLowerCase()
@@ -48,6 +56,12 @@ export async function middleware(request: NextRequest) {
       status: 404,
       headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' },
     })
+  }
+  const moved = event && MOVED_EVENT_SLUGS[event]
+  if (path.startsWith('/reserve') && moved) {
+    const url = request.nextUrl.clone()
+    url.searchParams.set('event', moved)
+    return NextResponse.redirect(url)
   }
 
   const password = process.env.SITE_PASSWORD
