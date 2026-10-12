@@ -200,11 +200,35 @@ export function isOnRequest(rate?: FvTableRate): boolean {
   return Boolean(rate?.whatsapp_contact_enabled)
 }
 
-/** A wa.me link for a rate, with the request already written. */
-export function whatsappLink(rate: FvTableRate, message: string): string | undefined {
-  const digits = rate.whatsapp_contact_phone_number?.replace(/\D/g, '')
+/** A wa.me link to a number, with the message already written. */
+export function whatsappTo(phone: string | undefined, message: string): string | undefined {
+  const digits = phone?.replace(/\D/g, '')
   if (!digits) return undefined
   return `https://wa.me/${digits}?text=${encodeURIComponent(message)}`
+}
+
+/** A wa.me link for a rate, with the request already written. */
+export function whatsappLink(rate: FvTableRate, message: string): string | undefined {
+  return whatsappTo(rate.whatsapp_contact_phone_number, message)
+}
+
+/**
+ * The number a guest can reach a host on.
+ *
+ * The venue hangs it off the one rate it sells by hand — today the DJ booth
+ * — and no other rate carries it, so it is read as the venue's number rather
+ * than that rate's. Without one there is nobody to send a request to, and the
+ * interface says nothing about making one.
+ */
+export function venueWhatsapp(zones: FvZone[]): string | undefined {
+  for (const zone of zones) {
+    for (const table of zone.spaces ?? []) {
+      for (const rate of ratesFor(table, zone)) {
+        if (rate.whatsapp_contact_phone_number) return rate.whatsapp_contact_phone_number
+      }
+    }
+  }
+  return undefined
 }
 
 /** The rates a table can be booked on — table-level wins over zone-level. */

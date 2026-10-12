@@ -5,6 +5,7 @@ import { FloorMap } from '../FloorMap'
 import { ZoneSwitch } from '../ZoneSwitch'
 import { GuestCount } from '../GuestCount'
 import { DisclosureMark } from '../DisclosureMark'
+import { RequestOffer } from '../RequestOffer'
 import { VENUE } from '@/content/venue'
 import { BreakdownLines } from '../Breakdown'
 import type { Breakdown } from '@/lib/pricing'
@@ -12,7 +13,9 @@ import {
   isOnRequest,
   ratesFor,
   tableSeats,
+  venueWhatsapp,
   whatsappLink,
+  whatsappTo,
 } from '@/lib/floorplan'
 import { cn, formatMoney } from '@/lib/utils'
 import { WOMEN_PER_MAN } from '@/lib/party'
@@ -66,6 +69,9 @@ export function TableStep({
 
   // The table, once chosen, is the only limit on the party: its own minimum
   // at the bottom and what its rate sells at the top. Nothing above it.
+  // One number for the whole venue, taken from whichever rate publishes it.
+  const hostPhone = venueWhatsapp(zones)
+
   const partyLimits = table
     ? { min: table.minimum || 1, max: tableSeats(table, zone) }
     : null
@@ -279,6 +285,22 @@ export function TableStep({
                   </div>
                 </details>
               )
+          )}
+
+          {/* Beside booking it, not instead of it: the price above stands,
+              and this is the way to ask for another. Only for the tables
+              that are actually for sale — a contact-only rate is already a
+              request, and it has no price to counter. */}
+          {!isOnRequest(rate) && hostPhone && (
+            <RequestOffer
+              currency={currency}
+              link={amount =>
+                whatsappTo(
+                  hostPhone,
+                  `Hi ${VENUE.name} — I would like to request Table ${table.name}, ${rate.name}, for ${nightLabel}, ${partySize} guests, at ${formatMoney(amount, currency)}.`,
+                )
+              }
+            />
           )}
 
           {rate.content && (
