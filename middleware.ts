@@ -45,7 +45,10 @@ const DEAD_EVENT_SLUGS = new Set([
  * instead. Without an entry here, `/reserve` would answer them with a 404.
  */
 const MOVED_EVENT_SLUGS: Record<string, string> = {
-  'party-at-453-w-17th-s-09-10-2026': 'french-montana--fetty-wap-09-10-2026',
+  // The night moved to the 16th as well as changing its name, and the slug
+  // carries the date: sending it to the 9th only swapped one dead link for
+  // another. Checked against the live calendar.
+  'party-at-453-w-17th-s-09-10-2026': 'french-montana--fetty-wap-16-10-2026',
 }
 
 export async function middleware(request: NextRequest) {
